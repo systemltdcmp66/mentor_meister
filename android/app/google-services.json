@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "703211532789",
+    "project_id": "mentormeister-6021a",
+    "storage_bucket": "mentormeister-6021a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:703211532789:android:e3480a141f7ead46b630bc",
+        "android_client_info": {
+          "package_name": "com.example.mentormeister"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "703211532789-9r6a39g3ihkm775075m57u092rca4rcu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.mentormeister",
+            "certificate_hash": "ed621014d888e33b05f2d0334b626bbb5d4f8809"
+          }
+        },
+        {
+          "client_id": "703211532789-9ojt6co167s1upte9h2s1hbj25lsq08n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4rpo9HkanvfyMg_eQMQevbA793cvmwkM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "703211532789-9ojt6co167s1upte9h2s1hbj25lsq08n.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "703211532789-sle38aanochc5mplrafhg1h8mhaf4rc5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.mentormeister"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

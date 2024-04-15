@@ -1,12 +1,12 @@
 name: mentormeister
 description: "A new Flutter project."
 
-publish_to: 'none' 
+publish_to: "none"
 
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.2.3 <4.0.0'
+  sdk: ">=3.2.3 <4.0.0"
 
 dependencies:
   flutter:
@@ -16,11 +16,24 @@ dependencies:
   dotted_border: ^2.1.0
   image_picker: ^1.0.7
   file_picker: ^8.0.0+1
-#  audioplayers: 5.2.0
+  #  audioplayers: 5.2.0
   flutter_rating_bar: ^4.0.1
   intl: ^0.19.0
 
   cupertino_icons: ^1.0.2
+  firebase_core: ^2.29.0
+  firebase_auth: ^4.19.1
+  firebase_storage: ^11.7.1
+  cloud_firestore: ^4.16.1
+  equatable: ^2.0.5
+  dartz: ^0.10.1
+  shared_preferences: ^2.2.3
+  bloc: ^8.1.4
+  flutter_bloc: ^8.1.5
+  get_it: ^7.6.9
+  lottie: ^3.1.0
+  firebase_app_check: ^0.2.2+1
+  provider: ^6.1.2
 
 dev_dependencies:
   flutter_test:
@@ -29,7 +42,6 @@ dev_dependencies:
   flutter_lints: ^2.0.0
 
 flutter:
-
   uses-material-design: true
 
   assets:
@@ -37,30 +49,9 @@ flutter:
     - assets/teacher/
     - assets/students/
     - assets/subscription/
-  
-
-  
-  
-
-  
-  
-
-  
-  
-  
-  
-  
+    - assets/lottie/
 
   fonts:
     - family: LiveSession
       fonts:
         - asset: assets/fonts/LiveSession.ttf
-
-  
-  
-  
-  
-  
-  
-  
-  

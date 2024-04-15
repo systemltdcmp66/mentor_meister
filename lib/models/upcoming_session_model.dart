@@ -1,4 +1,3 @@
-
 // Model for Upcoming Session
 class UpcomingSession {
   final String studentName;
@@ -14,22 +13,18 @@ class UpcomingSession {
   });
 }
 
-
-  // Dummy data for demonstration
-  final List<UpcomingSession> upcomingSessions = [
-    UpcomingSession(
-      studentName: 'Giuseppe Ficara',
-      courseTitle: 'React.js from scratch',
-      time: '08:00 AM',
-      duration: '(1 Hour, 30 Min)',
-    ),
-    UpcomingSession(
-      studentName: 'Giuseppe Ficara',
-      courseTitle: 'React.js from scratch',
-      time: '08:00 AM',
-      duration: '(1 Hour, 30 Min)',
-    ),  ];
-
-
-
-
+// Dummy data for demonstration
+final List<UpcomingSession> upcomingSessions = [
+  UpcomingSession(
+    studentName: 'Giuseppe Ficara',
+    courseTitle: 'React.js from scratch',
+    time: '08:00 AM',
+    duration: '(1 Hour, 30 Min)',
+  ),
+  UpcomingSession(
+    studentName: 'Giuseppe Ficara',
+    courseTitle: 'React.js from scratch',
+    time: '08:00 AM',
+    duration: '(1 Hour, 30 Min)',
+  ),
+];

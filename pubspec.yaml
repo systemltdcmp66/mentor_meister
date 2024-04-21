@@ -50,6 +50,7 @@ flutter:
     - assets/students/
     - assets/subscription/
     - assets/lottie/
+    - assets/defaults/
 
   fonts:
     - family: LiveSession

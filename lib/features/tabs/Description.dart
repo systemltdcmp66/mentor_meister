@@ -1,17 +1,26 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mentormeister/commons/app/providers/teacher_sign_up_controller.dart';
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
 
 class Description extends StatefulWidget {
-  const Description({super.key});
+  const Description({
+    super.key,
+    required this.headlineController,
+    required this.descriptionController,
+    required this.firstName,
+    required this.lastName,
+  });
+
+  final TextEditingController headlineController;
+  final TextEditingController descriptionController;
+  final String firstName;
+  final String lastName;
 
   @override
   _DescriptionState createState() => _DescriptionState();
 }
 
 class _DescriptionState extends State<Description> {
-  String fullName = 'Fazin Ali';
-  TextEditingController headlineController = TextEditingController();
-  TextEditingController descriptionController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -33,11 +42,17 @@ class _DescriptionState extends State<Description> {
             height: 133,
             child: Row(
               children: [
-                Image.asset(
-                  'assets/teacher/person.png',
-                  height: 100,
-                  width: 100,
-                ),
+                context.read<TeacherSignUpController>().profilePic == null
+                    ? Image.asset(
+                        'assets/teacher/person.png',
+                        height: 100,
+                        width: 100,
+                      )
+                    : Image.file(
+                        context.read<TeacherSignUpController>().profilePic!,
+                        width: 100,
+                        height: 100,
+                      ),
                 SizedBox(
                   width: Dimensions.widthSize,
                 ),
@@ -46,14 +61,20 @@ class _DescriptionState extends State<Description> {
                   crossAxisAlignment: crossStart,
                   children: [
                     Text(
-                      fullName,
+                      '${widget.firstName} ${widget.lastName}',
                       style: CustomStyle.blackh2,
                     ),
                     SizedBox(height: Dimensions.marginBetweenInputTitleAndBox),
                     SizedBox(
                       width: MediaQuery.of(context).size.width * 0.5,
                       child: TextFormField(
-                        controller: descriptionController,
+                        controller: widget.headlineController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'This field is required';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: CustomColor.greyColor,
@@ -82,7 +103,13 @@ class _DescriptionState extends State<Description> {
             width: MediaQuery.of(context).size.width,
             child: Center(
               child: TextFormField(
-                controller: descriptionController,
+                controller: widget.descriptionController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'This field is required';
+                  }
+                  return null;
+                },
                 textAlign: TextAlign.center,
                 decoration: InputDecoration(
                   filled: true,

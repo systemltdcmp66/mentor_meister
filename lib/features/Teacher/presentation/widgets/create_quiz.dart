@@ -1,8 +1,8 @@
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
 
-import '../../commons/widgets/custom_appbar.dart';
-import '../../commons/widgets/custom_button.dart';
-import '../../commons/widgets/custom_dropdown.dart';
+import '../../../../commons/widgets/custom_appbar.dart';
+import '../../../../commons/widgets/custom_button.dart';
+import '../../../../commons/widgets/custom_dropdown.dart';
 
 class CreateQuizScreen extends StatefulWidget {
   const CreateQuizScreen({super.key});

@@ -1,47 +1,87 @@
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
 
 class AboutForm extends StatefulWidget {
-  const AboutForm({super.key});
+  const AboutForm({
+    super.key,
+    required this.firstNameController,
+    required this.lastNameController,
+    required this.phoneNumberController,
+    required this.countryController,
+    required this.languageController,
+    required this.subjectController,
+    required this.emailController,
+  });
+
+  final TextEditingController firstNameController;
+  final TextEditingController lastNameController;
+  final TextEditingController phoneNumberController;
+  final TextEditingController countryController;
+  final TextEditingController languageController;
+  final TextEditingController subjectController;
+  final TextEditingController emailController;
 
   @override
   _AboutFormState createState() => _AboutFormState();
 }
 
 class _AboutFormState extends State<AboutForm> {
-  TextEditingController countryController = TextEditingController();
-  TextEditingController languageController = TextEditingController();
-  TextEditingController subjectController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          buildTextFormField(Icons.person_outline, 'First Name'),
+          buildTextFormField(
+            icon: Icons.person_outline,
+            text: 'First Name',
+            controller: widget.firstNameController,
+          ),
           SizedBox(
             height: Dimensions.marginBetweenInputTitleAndBox,
           ),
-          buildTextFormField(Icons.person_outline, 'Last Name'),
+          buildTextFormField(
+            icon: Icons.person_outline,
+            text: 'Last Name',
+            controller: widget.lastNameController,
+          ),
           SizedBox(
             height: Dimensions.marginBetweenInputTitleAndBox,
           ),
-          buildTextFormField(Icons.phone_outlined, 'Phone No'),
-          SizedBox(height: Dimensions.marginBetweenInputTitleAndBox),
-          buildDropdownFormField(Icons.public, 'Country',
-              ['Pakistan', 'Canada', 'UK'], 'Pakistan', countryController),
-          SizedBox(height: Dimensions.marginBetweenInputTitleAndBox),
-          buildDropdownFormField(Icons.language_rounded, 'Language Spoken',
-              ['Urdu', 'English', 'French'], 'Urdu', languageController),
+          buildTextFormField(
+            icon: Icons.phone_outlined,
+            text: 'Phone No',
+            controller: widget.phoneNumberController,
+          ),
           SizedBox(height: Dimensions.marginBetweenInputTitleAndBox),
           buildDropdownFormField(
-              Icons.book,
-              'Subject Taught',
-              ["Mathematics", "Science", "Literature"],
-              'Mathematics',
-              subjectController),
+            Icons.public,
+            'Country',
+            ['Pakistan', 'Canada', 'UK'],
+            'Pakistan',
+            widget.countryController,
+          ),
+          SizedBox(height: Dimensions.marginBetweenInputTitleAndBox),
+          buildDropdownFormField(
+            Icons.language_rounded,
+            'Language Spoken',
+            ['Urdu', 'English', 'French'],
+            'Urdu',
+            widget.languageController,
+          ),
+          SizedBox(height: Dimensions.marginBetweenInputTitleAndBox),
+          buildDropdownFormField(
+            Icons.book,
+            'Subject Taught',
+            ["Mathematics", "Science", "Literature"],
+            'Mathematics',
+            widget.subjectController,
+          ),
           SizedBox(height: Dimensions.heightSize),
-          buildTextFormField(Icons.link, 'Email'),
+          buildTextFormField(
+            icon: Icons.link,
+            text: 'Email',
+            controller: widget.emailController,
+          ),
           SizedBox(height: Dimensions.heightSize),
         ],
       ),
@@ -49,11 +89,12 @@ class _AboutFormState extends State<AboutForm> {
   }
 
   Widget buildDropdownFormField(
-      IconData icon,
-      String labelText,
-      List<String> dropdownOptions,
-      String initialValue,
-      TextEditingController dropdownController) {
+    IconData icon,
+    String labelText,
+    List<String> dropdownOptions,
+    String initialValue,
+    TextEditingController dropdownController,
+  ) {
     return Row(
       children: [
         Expanded(
@@ -96,8 +137,19 @@ class _AboutFormState extends State<AboutForm> {
   }
 }
 
-TextFormField buildTextFormField(IconData icon, String text) {
+TextFormField buildTextFormField({
+  required TextEditingController controller,
+  required IconData icon,
+  required String text,
+}) {
   return TextFormField(
+    controller: controller,
+    validator: (value) {
+      if (value == null || value.isEmpty) {
+        return 'This field is required';
+      }
+      return null;
+    },
     decoration: InputDecoration(
       labelText: text,
       border: InputBorder.none,

@@ -1,6 +1,6 @@
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
-import '../../commons/widgets/custom_appbar.dart';
-import '../Student/meeting_report_page.dart';
+import '../../../../commons/widgets/custom_appbar.dart';
+import '../../../Student/meeting_report_page.dart';
 
 class VideoCallScreen extends StatefulWidget {
   const VideoCallScreen({super.key});

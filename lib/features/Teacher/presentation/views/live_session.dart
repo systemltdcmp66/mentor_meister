@@ -1,8 +1,8 @@
-import 'package:mentormeister/features/Teacher/live_session_start.dart';
+import 'package:mentormeister/features/Teacher/presentation/widgets/live_session_start.dart';
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
 
-import '../../models/upcoming_session_model.dart';
-import '../../commons/widgets/custom_appbar.dart';
+import '../../../../models/upcoming_session_model.dart';
+import '../../../../commons/widgets/custom_appbar.dart';
 
 class LiveSessionPage extends StatelessWidget {
   const LiveSessionPage({Key? key}) : super(key: key);

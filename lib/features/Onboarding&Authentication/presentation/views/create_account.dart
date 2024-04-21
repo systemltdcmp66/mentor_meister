@@ -302,14 +302,14 @@ class RegisterForm extends StatelessWidget {
               color: Colors.grey[100],
               child: Padding(
                 padding: EdgeInsets.all(10.r),
-                child: Row(
-                  mainAxisAlignment: mainSpaceBet,
-                  children: [
-                    StatefulBuilder(builder: (context, refresh) {
-                      nameController.addListener(
-                        () => refresh(() {}),
-                      );
-                      return Row(
+                child: StatefulBuilder(builder: (context, refresh) {
+                  nameController.addListener(
+                    () => refresh(() {}),
+                  );
+                  return Row(
+                    mainAxisAlignment: mainSpaceBet,
+                    children: [
+                      Row(
                         children: [
                           const Icon(
                             Icons.person,
@@ -323,20 +323,17 @@ class RegisterForm extends StatelessWidget {
                             style: CustomStyle.blackh3,
                           ),
                         ],
-                      );
-                    }),
-                    Builder(builder: (context) {
-                      bool isNameCorrect = nameController.text.isEmpty ||
-                              nameController.text.length < 4
-                          ? false
-                          : true;
-                      return Icon(
-                        isNameCorrect ? Icons.check_circle : Icons.error,
+                      ),
+                      Icon(
+                        !(nameController.text.isEmpty ||
+                                nameController.text.length < 4)
+                            ? Icons.check_circle
+                            : Icons.error,
                         color: CustomColor.redColor,
-                      );
-                    }),
-                  ],
-                ),
+                      ),
+                    ],
+                  );
+                }),
               ),
             ),
             SizedBox(height: Dimensions.heightSize),

@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mentormeister/commons/app/providers/teacher_provider.dart';
 import 'package:mentormeister/commons/app/providers/user_provider.dart';
 import 'package:mentormeister/commons/views/page_under_construction.dart';
 import 'package:mentormeister/core/services/injection_container.dart';
@@ -14,7 +16,13 @@ import 'package:mentormeister/features/Onboarding&Authentication/presentation/vi
 import 'package:mentormeister/features/Onboarding&Authentication/presentation/views/login.dart';
 import 'package:mentormeister/features/Onboarding&Authentication/presentation/views/onboarding_screen.dart';
 import 'package:mentormeister/features/Onboarding&Authentication/presentation/widgets/ask_page.dart';
-import 'package:mentormeister/features/Teacher/bottom_nav_bar.dart';
+import 'package:mentormeister/features/Teacher/presentation/app/assignment_cubit/assignment_cubit.dart';
+import 'package:mentormeister/features/Teacher/presentation/app/course_cubit/course_cubit.dart';
+import 'package:mentormeister/features/Teacher/presentation/app/teacher_sign_up_cubit/teacher_sign_up_cubit.dart';
+import 'package:mentormeister/features/Teacher/presentation/widgets/bottom_nav_bar.dart';
+import 'package:mentormeister/features/Teacher/presentation/views/tutor_signup.dart';
+import 'package:mentormeister/features/Teacher/presentation/widgets/create_assignment.dart';
+import 'package:mentormeister/features/Teacher/presentation/widgets/create_course.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
@@ -48,6 +56,13 @@ Route<dynamic> generateRoute(RouteSettings settings) {
             } else if (isStudent && isTeacher == false) {
               return BottomNavBar(isStudent: isStudent);
             } else if (isTeacher && isStudent == false) {
+              bool isTeacherSignUp = prefs.getBool('teacherId') ?? false;
+              if (!isTeacherSignUp) {
+                return BlocProvider(
+                  create: (_) => sl<TeacherSignUpCubit>(),
+                  child: const TutorSignUp(),
+                );
+              }
               return BottomNavBar(isStudent: isStudent);
             }
           }
@@ -56,6 +71,15 @@ Route<dynamic> generateRoute(RouteSettings settings) {
             child: const LoginPage(),
           );
         },
+        settings: settings,
+      );
+
+    case TutorSignUp.routeName:
+      return _pageBuilder(
+        (_) => BlocProvider(
+          create: (_) => sl<TeacherSignUpCubit>(),
+          child: const TutorSignUp(),
+        ),
         settings: settings,
       );
 
@@ -95,6 +119,23 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     //     (_) => const ForgotPasswordScreen(),
     //     settings: settings,
     //   );
+
+    case CreateCourseScreen.routeName:
+      return _pageBuilder(
+        (_) => BlocProvider(
+          create: (_) => sl<CourseCubit>(),
+          child: const CreateCourseScreen(),
+        ),
+        settings: settings,
+      );
+    case CreateAssignmentScreen.routeName:
+      return _pageBuilder(
+        (_) => BlocProvider(
+          create: (_) => sl<AssignmentCubit>(),
+          child: const CreateAssignmentScreen(),
+        ),
+        settings: settings,
+      );
     default:
       return _pageBuilder(
         (_) => const PageUnderConstruction(),

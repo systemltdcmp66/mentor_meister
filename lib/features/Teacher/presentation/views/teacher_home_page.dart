@@ -1,137 +1,198 @@
-import 'package:mentormeister/features/Teacher/create_assignment.dart';
-import 'package:mentormeister/features/Teacher/create_course.dart';
-import 'package:mentormeister/features/Teacher/create_quiz.dart';
-import 'package:mentormeister/core/utils/basic_screen_imports.dart';
-import '../../models/upcoming_session_model.dart';
-import '../../models/video_cardmodel.dart';
+import 'dart:io';
 
-class TeacherHomePage extends StatelessWidget {
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mentormeister/commons/app/providers/teacher_provider.dart';
+import 'package:mentormeister/commons/widgets/no_found_text.dart';
+import 'package:mentormeister/core/utils/core_utils.dart';
+import 'package:mentormeister/features/Teacher/data/models/course_model.dart';
+import 'package:mentormeister/features/Teacher/presentation/app/course_cubit/course_cubit.dart';
+import 'package:mentormeister/features/Teacher/presentation/app/course_cubit/course_state.dart';
+import 'package:mentormeister/features/Teacher/presentation/widgets/create_course.dart';
+import 'package:mentormeister/features/Teacher/presentation/widgets/create_quiz.dart';
+import 'package:mentormeister/core/utils/basic_screen_imports.dart';
+import '../../../../models/upcoming_session_model.dart';
+import '../../../../models/video_cardmodel.dart';
+
+class TeacherHomePage extends StatefulWidget {
   const TeacherHomePage({Key? key}) : super(key: key);
+
+  @override
+  State<TeacherHomePage> createState() => _TeacherHomePageState();
+}
+
+class _TeacherHomePageState extends State<TeacherHomePage> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<TeacherProvider>().getTeacherInfo();
+    context.read<CourseCubit>().getCourses();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: CustomColor.primaryBGColor,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Black container with user's name
-          welcomeText(context),
+      body: BlocConsumer<CourseCubit, CourseState>(
+        listener: (_, state) {
+          if (state is CourseError) {
+            CoreUtils.showSnackar(
+              context: context,
+              message: state.message,
+            );
+          }
+        },
+        builder: (context, state) {
+          if (state is GettingCourse) {
+            return const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  CustomColor.redColor,
+                ),
+              ),
+            );
+          } else if (state is CourseFetched && state.courses.isEmpty) {
+            return const NoFoundtext(
+              'No courses found\nPlease contact teacher or if you are admin add courses',
+            );
+          } else if (state is CourseFetched) {
+            final courses = state.courses
+              ..sort(
+                (a, b) => b.updatedAt.compareTo(
+                  a.updatedAt,
+                ),
+              );
 
-          SizedBox(height: Dimensions.heightSize),
-          // Card with available balance and language selection
-          Card(
-            elevation: 0,
-            margin: EdgeInsets.all(8.r),
-            child: Padding(
-              padding: EdgeInsets.all(8.r),
-              child: Row(
-                children: [
-                  Text(
-                    'Available Balance',
-                    style: CustomStyle.pBStyle,
-                  ),
-                  SizedBox(width: 8.w),
-                  DropdownButton<String>(
-                    value: '\$30.00 USD',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                    ), // Default value
-                    items: <String>['\$30.00 USD', '\$40.00 USD', '\$50.00 USD']
-                        .map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(
-                          value,
-                          style: const TextStyle(color: CustomColor.redColor),
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Black container with user's name
+                welcomeText(context),
+
+                SizedBox(height: Dimensions.heightSize),
+                // Card with available balance and language selection
+                Card(
+                  elevation: 0,
+                  margin: EdgeInsets.all(8.r),
+                  child: Padding(
+                    padding: EdgeInsets.all(8.r),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Available Balance',
+                          style: CustomStyle.pBStyle,
                         ),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      // Handle balance dropdown change
-                    },
-                  ),
-                  SizedBox(width: Dimensions.widthSize),
-                  Expanded(
-                    child: DropdownButton<String>(
-                      value: 'English',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                      ), // Default value
-                      items: <String>['English', 'Urdu', 'French']
-                          .map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(
-                            value,
-                            style: const TextStyle(color: Colors.grey),
+                        SizedBox(width: 8.w),
+                        DropdownButton<String>(
+                          value: '\$30.00 USD',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                          ), // Default value
+                          items: <String>[
+                            '\$30.00 USD',
+                            '\$40.00 USD',
+                            '\$50.00 USD'
+                          ].map((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(
+                                value,
+                                style: const TextStyle(
+                                    color: CustomColor.redColor),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            // Handle balance dropdown change
+                          },
+                        ),
+                        SizedBox(width: Dimensions.widthSize),
+                        Expanded(
+                          child: DropdownButton<String>(
+                            value: 'English',
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                            ), // Default value
+                            items: <String>['English', 'Urdu', 'French']
+                                .map((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(
+                                  value,
+                                  style: const TextStyle(color: Colors.grey),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (String? newValue) {
+                              // Handle language dropdown change
+                            },
                           ),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        // Handle language dropdown change
-                      },
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-          // Row with "My Courses" text and "See All" button
-          Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: Dimensions.paddingSizeHorizontalSize),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'My Courses',
-                  style: CustomStyle.blackh1,
                 ),
-                TextButton(
-                  onPressed: () {
-                    // Your logic here
-                  },
+                // Row with "My Courses" text and "See All" button
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: Dimensions.paddingSizeHorizontalSize),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'My Courses',
+                        style: CustomStyle.blackh1,
+                      ),
+                      if (courses.length > 3)
+                        TextButton(
+                          onPressed: () {
+                            // Your logic here
+                          },
+                          child: Text(
+                            'See All',
+                            style: CustomStyle.fpStyle,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                // List of my courses Cards
+                SizedBox(
+                  height: 200.h,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: courses.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return buildVideoCard(
+                        courses[index] as CourseModel,
+                      );
+                    },
+                  ),
+                ),
+                // Recent courses
+                Padding(
+                  padding: EdgeInsets.all(Dimensions.paddingSizeHorizontalSize),
                   child: Text(
-                    'See All',
-                    style: CustomStyle.fpStyle,
+                    'Upcoming Live Sessions',
+                    style: CustomStyle.blackh1,
+                  ),
+                ),
+                // List of recent courses Cards
+                Expanded(
+                  child: ListView.builder(
+                    padding: EdgeInsets.zero,
+                    scrollDirection: Axis.vertical,
+                    itemCount: upcomingSessions.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return buildLiveSessionCard(upcomingSessions[index]);
+                    },
                   ),
                 ),
               ],
-            ),
-          ),
-          // List of my courses Cards
-          SizedBox(
-            height: 200.h,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: videoCards.length,
-              itemBuilder: (BuildContext context, int index) {
-                return buildVideoCard(videoCards[index]);
-              },
-            ),
-          ),
-          // Recent courses
-          Padding(
-            padding: EdgeInsets.all(Dimensions.paddingSizeHorizontalSize),
-            child: Text(
-              'Upcoming Live Sessions',
-              style: CustomStyle.blackh1,
-            ),
-          ),
-          // List of recent courses Cards
-          Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.zero,
-              scrollDirection: Axis.vertical,
-              itemCount: upcomingSessions.length,
-              itemBuilder: (BuildContext context, int index) {
-                return buildLiveSessionCard(upcomingSessions[index]);
-              },
-            ),
-          ),
-        ],
+            );
+          }
+          return const SizedBox.shrink();
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -172,22 +233,18 @@ class TeacherHomePage extends StatelessWidget {
                         leading: buildContainer(Icons.mode_edit_sharp),
                         title: const Text('Create Course'),
                         onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const CreateCourseScreen()));
+                          Navigator.of(context).pushNamed(
+                            CreateCourseScreen.routeName,
+                          );
                         },
                       ),
                       ListTile(
                         leading: buildContainer(Icons.add_box),
                         title: const Text('Create Assignment'),
                         onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const CreateAssignmentScreen()));
+                          Navigator.of(context).pushNamed(
+                            CreateCourseScreen.routeName,
+                          );
                         },
                       ),
                       ListTile(
@@ -195,10 +252,11 @@ class TeacherHomePage extends StatelessWidget {
                         title: const Text('Create Quiz'),
                         onTap: () {
                           Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const CreateQuizScreen()));
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const CreateQuizScreen(),
+                            ),
+                          );
                         },
                       ),
                     ],
@@ -231,7 +289,8 @@ class TeacherHomePage extends StatelessWidget {
             style: CustomStyle.whiteh3,
           ),
           Text(
-            'Jane Cooper',
+            '${context.watch<TeacherProvider>().teacherInfo![0].firstName} '
+            '${context.read<TeacherProvider>().teacherInfo![0].lastName}',
             style: CustomStyle.whiteh1,
           ),
         ],
@@ -254,7 +313,7 @@ class TeacherHomePage extends StatelessWidget {
     );
   }
 
-  Widget buildVideoCard(VideoCard videoCard) {
+  Widget buildVideoCard(CourseModel courseModel) {
     return SizedBox(
       height: 100.h,
       width: 200.h,
@@ -264,20 +323,30 @@ class TeacherHomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.asset(
-              videoCard.imageUrl,
-              height: 100,
-              width: double.infinity,
-              fit: BoxFit.cover,
+            courseModel.image!.contains('assets/defaults/default_course.png')
+                ? Image.asset(
+                    'assets/defaults/default_course.png',
+                    height: 100,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  )
+                : Image.network(
+                    courseModel.image!,
+                    height: 100,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+            const SizedBox(
+              height: 10,
             ),
             Text(
-              videoCard.title,
+              courseModel.title,
               style: CustomStyle.tabStyle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              videoCard.subtitle,
+              courseModel.type,
               style: CustomStyle.fpStyle,
             ),
             const Divider(
@@ -293,7 +362,7 @@ class TeacherHomePage extends StatelessWidget {
                 ),
                 const SizedBox(width: 4.0),
                 Text(
-                  videoCard.rating,
+                  '4',
                   style: TextStyle(
                     color: CustomColor.blackColor,
                     fontFamily: "Inter",
@@ -317,7 +386,7 @@ class TeacherHomePage extends StatelessWidget {
                   width: 5.w,
                 ),
                 Text(
-                  '${videoCard.numberOfStudents}',
+                  courseModel.numberOfStudents.toString(),
                   style: TextStyle(
                     fontFamily: "inter",
                     fontSize: 12.sp,
@@ -326,7 +395,7 @@ class TeacherHomePage extends StatelessWidget {
                 ),
                 Expanded(
                   child: Text(
-                    videoCard.price,
+                    courseModel.price.toString(),
                     textAlign: TextAlign.right,
                     style: CustomStyle.fpStyle,
                   ),

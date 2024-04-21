@@ -1,15 +1,9 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mentormeister/commons/app/providers/teacher_sign_up_controller.dart';
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
 
-class Pricing extends StatefulWidget {
+class Pricing extends StatelessWidget {
   const Pricing({super.key});
-
-  @override
-  _PricingState createState() => _PricingState();
-}
-
-class _PricingState extends State<Pricing> {
-  double hourlyRate = 10.0;
-  double coursePrice = 50.0;
 
   @override
   Widget build(BuildContext context) {
@@ -36,11 +30,13 @@ class _PricingState extends State<Pricing> {
               SizedBox(
                 width: 80.w,
                 child: TextFormField(
-                  initialValue: hourlyRate.toString(),
+                  initialValue: context
+                      .read<TeacherSignUpController>()
+                      .hourlyRate
+                      .toString(),
                   onChanged: (value) {
-                    setState(() {
-                      hourlyRate = double.parse(value);
-                    });
+                    context.read<TeacherSignUpController>().setHourlyRate =
+                        double.parse(value);
                   },
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(

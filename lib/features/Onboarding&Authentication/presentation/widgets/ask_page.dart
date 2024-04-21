@@ -2,10 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mentormeister/features/Onboarding&Authentication/presentation/app/ask_page_cubit/ask_page_cubit.dart';
 import 'package:mentormeister/features/Onboarding&Authentication/presentation/app/ask_page_cubit/ask_page_state.dart';
 import 'package:mentormeister/features/Onboarding&Authentication/presentation/views/onboarding_screen.dart';
-import 'package:mentormeister/features/Teacher/bottom_nav_bar.dart';
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
-
-import '../../../Teacher/tutor_signup.dart';
 
 class AskPage extends StatefulWidget {
   const AskPage({super.key});

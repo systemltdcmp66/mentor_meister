@@ -1,26 +1,24 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mentormeister/commons/app/providers/teacher_sign_up_controller.dart';
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
 
 class Availability extends StatefulWidget {
-  const Availability({super.key});
+  const Availability({
+    super.key,
+    required this.fromController,
+    required this.toController,
+  });
+
+  final TextEditingController fromController;
+  final TextEditingController toController;
 
   @override
   _AvailabilityState createState() => _AvailabilityState();
 }
 
 class _AvailabilityState extends State<Availability> {
-  Map<String, bool> availabilityMap = {
-    'Monday': false,
-    'Tuesday': false,
-    'Wednesday': false,
-    'Thursday': false,
-    'Friday': false,
-  };
-
   TimeOfDay startTime = const TimeOfDay(hour: 19, minute: 0);
   TimeOfDay endTime = const TimeOfDay(hour: 19, minute: 0);
-//controllers
-  TextEditingController fromController = TextEditingController();
-  TextEditingController toController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -41,7 +39,11 @@ class _AvailabilityState extends State<Availability> {
           Column(
             crossAxisAlignment: crossStart,
             mainAxisAlignment: mainStart,
-            children: availabilityMap.entries.map((entry) {
+            children: context
+                .read<TeacherSignUpController>()
+                .availabilityMap
+                .entries
+                .map((entry) {
               return Column(
                 children: [
                   Row(
@@ -50,7 +52,9 @@ class _AvailabilityState extends State<Availability> {
                         value: entry.value,
                         onChanged: (value) {
                           setState(() {
-                            availabilityMap[entry.key] = value!;
+                            context
+                                .read<TeacherSignUpController>()
+                                .availabilityMap[entry.key] = value!;
                           });
                         },
                       ),
@@ -61,7 +65,10 @@ class _AvailabilityState extends State<Availability> {
                     children: [
                       Expanded(
                         child: buildDropdownFormField(
-                            ["6:00", "11:00", "12:00"], '6:00', fromController),
+                          ["6:00", "11:00", "12:00"],
+                          '6:00',
+                          widget.fromController,
+                        ),
                       ),
                       Padding(
                           padding: const EdgeInsets.all(5),
@@ -71,7 +78,10 @@ class _AvailabilityState extends State<Availability> {
                           )),
                       Expanded(
                         child: buildDropdownFormField(
-                            ['9:00', "8:00", "10:00"], '9:00', toController),
+                          ['9:00', "8:00", "10:00"],
+                          '9:00',
+                          widget.toController,
+                        ),
                       ),
                     ],
                   ),

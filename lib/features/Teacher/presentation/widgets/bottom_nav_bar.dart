@@ -1,14 +1,17 @@
-import 'package:mentormeister/features/Teacher/messages_screen.dart';
-import 'package:mentormeister/features/Teacher/teacher_home_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mentormeister/core/services/injection_container.dart';
+import 'package:mentormeister/features/Teacher/presentation/app/course_cubit/course_cubit.dart';
+import 'package:mentormeister/features/Teacher/presentation/views/messages_screen.dart';
+import 'package:mentormeister/features/Teacher/presentation/views/teacher_home_page.dart';
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
 
-import '../../commons/widgets/LiveSession.dart';
-import '../Student/course_enrollment.dart';
-import '../Student/student_home_page.dart';
-import '../Student/teachers.dart';
-import 'live_session.dart';
-import 'my_account.dart';
-import 'my_courses/my_courses.dart';
+import '../../../../commons/widgets/LiveSession.dart';
+import '../../../Student/course_enrollment.dart';
+import '../../../Student/student_home_page.dart';
+import '../../../Student/teachers.dart';
+import '../views/live_session.dart';
+import '../views/my_account.dart';
+import '../../my_courses/my_courses.dart';
 
 class BottomNavBar extends StatefulWidget {
   final bool isStudent;
@@ -35,7 +38,10 @@ class _BottomNavBarState extends State<BottomNavBar> {
             const MyAccountScreen(),
           ]
         : [
-            const TeacherHomePage(),
+            BlocProvider(
+              create: (_) => sl<CourseCubit>(),
+              child: const TeacherHomePage(),
+            ),
             const MsgScreen(),
             const LiveSessionPage(),
             const MyCoursesScreen(),

@@ -14,6 +14,7 @@ class LocalUserModel extends LocaleUser {
     super.enrolledCourseIds,
     super.followers,
     super.following,
+    super.teacherId,
   });
 
   const LocalUserModel.empty()
@@ -27,18 +28,19 @@ class LocalUserModel extends LocaleUser {
 
   LocalUserModel.fromMap(DataMap map)
       : this(
-          uid: map['uid'] as String,
-          name: map['name'] as String,
-          email: map['email'] as String,
-          phoneNumber: map['phoneNumber'] as String,
-          points: (map['points'] as num).toInt(),
-          bio: map['bio'] as String?,
-          profilePic: map['profilePic'] as String?,
-          groupIds: List<String>.from(map['groupIds'] as List<dynamic>),
-          enrolledCourseIds: (map['enrolledCourseIds'] as List).cast<String>(),
-          followers: List<String>.from(map['followers'] as List),
-          following: List<String>.from(map['following'] as List<dynamic>),
-        );
+            uid: map['uid'] as String,
+            name: map['name'] as String,
+            email: map['email'] as String,
+            phoneNumber: map['phoneNumber'] as String,
+            points: (map['points'] as num).toInt(),
+            bio: map['bio'] as String?,
+            profilePic: map['profilePic'] as String?,
+            groupIds: List<String>.from(map['groupIds'] as List<dynamic>),
+            enrolledCourseIds:
+                (map['enrolledCourseIds'] as List).cast<String>(),
+            followers: List<String>.from(map['followers'] as List),
+            following: List<String>.from(map['following'] as List<dynamic>),
+            teacherId: map['teacherId'] as String?);
 
   DataMap toMap() => {
         'uid': uid,
@@ -52,6 +54,7 @@ class LocalUserModel extends LocaleUser {
         'enrolledCourseIds': enrolledCourseIds,
         'followers': followers,
         'following': following,
+        'teacherId': teacherId,
       };
 
   LocalUserModel copyWith({
@@ -66,6 +69,7 @@ class LocalUserModel extends LocaleUser {
     List<String>? groupIds,
     List<String>? followers,
     List<String>? following,
+    String? teacherId,
   }) =>
       LocalUserModel(
         uid: uid ?? this.uid,
@@ -78,5 +82,6 @@ class LocalUserModel extends LocaleUser {
         enrolledCourseIds: enrolledCourseIds ?? this.enrolledCourseIds,
         followers: followers ?? this.followers,
         following: following ?? this.following,
+        teacherId: teacherId ?? this.teacherId,
       );
 }

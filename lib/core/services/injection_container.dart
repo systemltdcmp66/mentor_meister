@@ -24,161 +24,24 @@ import 'package:mentormeister/features/Onboarding&Authentication/domain/usecases
 import 'package:mentormeister/features/Onboarding&Authentication/presentation/app/ask_page_cubit/ask_page_cubit.dart';
 import 'package:mentormeister/features/Onboarding&Authentication/presentation/app/authentication_bloc/authentication_bloc.dart';
 import 'package:mentormeister/features/Onboarding&Authentication/presentation/app/on_boarding_cubit/on_boarding_cubit.dart';
+import 'package:mentormeister/features/Teacher/data/datasources/assignment_remote_data_src.dart';
+import 'package:mentormeister/features/Teacher/data/datasources/course_remote_data_src.dart';
+import 'package:mentormeister/features/Teacher/data/datasources/teacher_sign_up_remote_data_src.dart';
+import 'package:mentormeister/features/Teacher/data/repositories/assignment_repo_implementation.dart';
+import 'package:mentormeister/features/Teacher/data/repositories/course_repo_implementation.dart';
+import 'package:mentormeister/features/Teacher/data/repositories/teacher_sign_up_repo_implementation.dart';
+import 'package:mentormeister/features/Teacher/domain/repositories/assignment_repository.dart';
+import 'package:mentormeister/features/Teacher/domain/repositories/course_repository.dart';
+import 'package:mentormeister/features/Teacher/domain/repositories/teacher_sign_up_repository.dart';
+import 'package:mentormeister/features/Teacher/domain/usescases/create_assignment.dart';
+import 'package:mentormeister/features/Teacher/domain/usescases/create_course.dart';
+import 'package:mentormeister/features/Teacher/domain/usescases/get_assignments.dart';
+import 'package:mentormeister/features/Teacher/domain/usescases/get_courses.dart';
+import 'package:mentormeister/features/Teacher/domain/usescases/get_teacher_info.dart';
+import 'package:mentormeister/features/Teacher/domain/usescases/post_teacher_info.dart';
+import 'package:mentormeister/features/Teacher/presentation/app/assignment_cubit/assignment_cubit.dart';
+import 'package:mentormeister/features/Teacher/presentation/app/course_cubit/course_cubit.dart';
+import 'package:mentormeister/features/Teacher/presentation/app/teacher_sign_up_cubit/teacher_sign_up_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-final sl = GetIt.instance;
-
-Future<void> init() async {
-  await _onBoardingInit();
-  await _authenticationInit();
-  await _askPageInit();
-}
-
-Future<void> _onBoardingInit() async {
-  final prefs = await SharedPreferences.getInstance();
-  sl
-
-    // App Logic
-    ..registerFactory(
-      () => OnBoardingCubit(
-        cacheFirstTimer: sl(),
-        checkIfUserIsFirstTimer: sl(),
-      ),
-    )
-
-    // Usecases
-    ..registerLazySingleton(
-      () => CacheFirstTimer(
-        sl(),
-      ),
-    )
-    ..registerLazySingleton(
-      () => CheckIfUserIsFirstTimer(
-        sl(),
-      ),
-    )
-
-    // Repositories
-    ..registerLazySingleton<OnBoardingRepository>(
-      () => OnBoardingRepositoryImplementation(
-        sl(),
-      ),
-    )
-
-    // Datasources
-    ..registerLazySingleton<OnBoardingLocalDataSource>(
-      () => OnBoardingLocalDataSourceImplementation(
-        sl(),
-      ),
-    )
-
-    // External dependencies
-    ..registerLazySingleton(
-      () => prefs,
-    );
-}
-
-Future<void> _authenticationInit() async {
-  sl
-
-    // App Logic
-    ..registerFactory(
-      () => AuthenticationBloc(
-        signIn: sl(),
-        signUp: sl(),
-        forgotPassword: sl(),
-        updateUser: sl(),
-      ),
-    )
-
-    // Usecases
-    ..registerLazySingleton(
-      () => SignIn(
-        sl(),
-      ),
-    )
-    ..registerLazySingleton(
-      () => SignUp(
-        sl(),
-      ),
-    )
-    ..registerLazySingleton(
-      () => ForgotPassword(
-        sl(),
-      ),
-    )
-    ..registerLazySingleton(
-      () => UpdateUser(
-        sl(),
-      ),
-    )
-
-    // Repositories
-    ..registerLazySingleton<AuthenticationRepository>(
-      () => AuthenticationRepositoryImplementation(
-        sl(),
-      ),
-    )
-
-    // Datasources
-    ..registerLazySingleton<AuthenticationRemoteDataSource>(
-      () => AuthenticationRemoteDataSourceImplementation(
-        authClient: sl(),
-        cloudStoreClient: sl(),
-        dbClient: sl(),
-      ),
-    )
-
-    // External dependencies
-    ..registerLazySingleton(
-      () => FirebaseAuth.instance,
-    )
-    ..registerLazySingleton(
-      () => FirebaseFirestore.instance,
-    )
-    ..registerLazySingleton(
-      () => FirebaseStorage.instance,
-    );
-}
-
-Future<void> _askPageInit() async {
-  sl
-    ..registerFactory(
-      () => AskPageCubit(
-        isAStudent: sl(),
-        isATeacher: sl(),
-        checkIfUserIsAStudent: sl(),
-        checkIfUserIsATeacher: sl(),
-      ),
-    )
-    ..registerLazySingleton(
-      () => IsAStudent(
-        sl(),
-      ),
-    )
-    ..registerLazySingleton(
-      () => IsATeacher(
-        sl(),
-      ),
-    )
-    ..registerLazySingleton(
-      () => CheckIfUserIsAStudent(
-        sl(),
-      ),
-    )
-    ..registerLazySingleton(
-      () => CheckIfUserIsATeacher(
-        sl(),
-      ),
-    )
-    ..registerLazySingleton<AskPageRepository>(
-      () => AskPageRepositoryImplementation(
-        sl(),
-      ),
-    )
-    ..registerLazySingleton<AskPageLocaleDataSource>(
-      () => AskPageLocaleDataSourceImplementation(
-        sl(),
-      ),
-    );
-}
+part "injection_container.main.dart";

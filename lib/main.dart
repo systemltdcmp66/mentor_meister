@@ -2,6 +2,9 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:mentormeister/commons/app/providers/courses_provider.dart';
+import 'package:mentormeister/commons/app/providers/teacher_provider.dart';
+import 'package:mentormeister/commons/app/providers/teacher_sign_up_controller.dart';
 import 'package:mentormeister/commons/app/providers/user_provider.dart';
 import 'package:mentormeister/core/services/injection_container.dart';
 import 'package:mentormeister/core/services/router.dart';
@@ -39,6 +42,15 @@ class MyApp extends StatelessWidget {
         providers: [
           ChangeNotifierProvider(
             create: (_) => UserProvider(),
+          ),
+          ChangeNotifierProvider(
+            create: (_) => TeacherSignUpController(),
+          ),
+          ChangeNotifierProvider(
+            create: (_) => CoursesProvider(),
+          ),
+          ChangeNotifierProvider(
+            create: (_) => TeacherProvider(),
           ),
         ],
         child: const MaterialApp(

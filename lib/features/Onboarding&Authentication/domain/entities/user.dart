@@ -13,6 +13,7 @@ class LocaleUser extends Equatable {
     this.followers = const [],
     this.following = const [],
     this.groupIds = const [],
+    this.teacherId,
   });
 
   const LocaleUser.empty()
@@ -35,6 +36,7 @@ class LocaleUser extends Equatable {
   final List<String>? groupIds; // For chatting
   final List<String>? followers;
   final List<String>? following;
+  final String? teacherId;
 
   @override
   List<Object?> get props => [

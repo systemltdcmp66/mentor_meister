@@ -4,8 +4,8 @@ import 'package:mentormeister/features/Onboarding&Authentication/presentation/vi
 import 'package:mentormeister/features/Subscription/subscription_plan_page.dart';
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
 
-import '../../commons/widgets/custom_appbar.dart';
-import '../Subscription/rate_us.dart';
+import '../../../../commons/widgets/custom_appbar.dart';
+import '../../../Subscription/rate_us.dart';
 
 class MyAccountScreen extends StatelessWidget {
   const MyAccountScreen({super.key});

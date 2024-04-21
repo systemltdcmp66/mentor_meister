@@ -1,24 +1,31 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mentormeister/commons/app/providers/teacher_sign_up_controller.dart';
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class ProfilePhotoTab extends StatefulWidget {
-  const ProfilePhotoTab({super.key});
+  ProfilePhotoTab({
+    super.key,
+  });
 
   @override
   _ProfilePhotoTabState createState() => _ProfilePhotoTabState();
 }
 
 class _ProfilePhotoTabState extends State<ProfilePhotoTab> {
-  File? profilePic;
+  //File? profilePic;
   // Function to handle picking an image from the gallery
 
   Future<String?> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     setState(() {
-      profilePic = File(pickedFile!.path);
+      context.read<TeacherSignUpController>().setProfilePic =
+          File(pickedFile!.path);
+      context.read<TeacherSignUpController>().setProfilePicString =
+          pickedFile.path;
     });
     return null;
   }
@@ -72,8 +79,10 @@ class _ProfilePhotoTabState extends State<ProfilePhotoTab> {
             child: SizedBox(
               width: 400.w,
               height: 300.h,
-              child: profilePic != null
-                  ? Image.file(profilePic!, fit: BoxFit.cover)
+              child: context.read<TeacherSignUpController>().profilePic != null
+                  ? Image.file(
+                      context.read<TeacherSignUpController>().profilePic!,
+                      fit: BoxFit.cover)
                   : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

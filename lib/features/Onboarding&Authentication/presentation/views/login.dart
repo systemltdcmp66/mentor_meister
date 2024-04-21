@@ -2,17 +2,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mentormeister/commons/app/providers/user_provider.dart';
-import 'package:mentormeister/core/services/injection_container.dart';
 import 'package:mentormeister/core/utils/core_utils.dart';
-import 'package:mentormeister/features/Onboarding&Authentication/data/datasources/ask_page_locale_data_source.dart';
 import 'package:mentormeister/features/Onboarding&Authentication/data/models/user_model.dart';
 import 'package:mentormeister/features/Onboarding&Authentication/presentation/app/authentication_bloc/authentication_bloc.dart';
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
 import 'package:mentormeister/features/Onboarding&Authentication/presentation/views/create_account.dart';
 import 'package:mentormeister/features/Onboarding&Authentication/presentation/views/onboarding_screen.dart';
-import 'package:mentormeister/features/Onboarding&Authentication/presentation/widgets/ask_page.dart';
-import 'package:mentormeister/features/Teacher/bottom_nav_bar.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

@@ -1,6 +1,6 @@
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
 
-import '../give_feedback.dart';
+import '../presentation/widgets/give_feedback.dart';
 
 class Assignment {
   final String title;

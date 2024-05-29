@@ -1,19 +1,23 @@
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
 import 'package:mentormeister/commons/widgets/custom_button.dart';
+import 'package:mentormeister/features/Teacher/data/models/teacher_info_model.dart';
 import '../../commons/widgets/custom_appbar.dart';
 
-class MsgTeacher extends StatelessWidget {
-  final String imageUrl;
-  final String name;
-  final String subtitle;
-
+class MsgTeacher extends StatefulWidget {
   const MsgTeacher({
-    required this.imageUrl,
-    required this.name,
-    required this.subtitle,
+    required this.teacherInfoModel,
     Key? key,
   }) : super(key: key);
 
+  final TeacherInfoModel teacherInfoModel;
+
+  static const routeName = '/msg-teacher';
+
+  @override
+  State<MsgTeacher> createState() => _MsgTeacherState();
+}
+
+class _MsgTeacherState extends State<MsgTeacher> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,12 +40,27 @@ class MsgTeacher extends StatelessWidget {
               child: ListTile(
                 leading: Card(
                   clipBehavior: Clip.antiAlias,
-                  child: Image(
-                    image: AssetImage(imageUrl),
-                    fit: BoxFit.cover,
-                  ),
+                  child: widget.teacherInfoModel.profilePic!
+                          .contains('assets/defaults/default_course.png')
+                      ? Image.asset(
+                          'assets/defaults/default_course.png',
+                          height: 60.h,
+                          width: 60.h,
+                          fit: BoxFit.cover,
+                        )
+                      : Image.network(
+                          widget.teacherInfoModel.profilePic!,
+                          height: 60.h,
+                          width: 60.h,
+                          fit: BoxFit.cover,
+                        ),
+                  // Image(
+                  //   image: AssetImage(imageUrl),
+                  //   fit: BoxFit.cover,
+                  // ),
                 ),
-                title: Text(name),
+                title: Text(
+                    '${widget.teacherInfoModel.firstName} ${widget.teacherInfoModel.lastName}'),
                 subtitle: Row(
                   children: [
                     Icon(
@@ -51,7 +70,9 @@ class MsgTeacher extends StatelessWidget {
                     const SizedBox(
                       width: 5,
                     ),
-                    Text(subtitle)
+                    Text(
+                      widget.teacherInfoModel.subjectTaught,
+                    ),
                   ],
                 ),
               ),
@@ -75,7 +96,10 @@ class MsgTeacher extends StatelessWidget {
             SizedBox(
               height: 50.h,
             ),
-            CustomButton(text: 'Send Message', onPressed: () {}),
+            CustomButton(
+              text: 'Send Message',
+              onPressed: () {},
+            ),
           ],
         ),
       ),

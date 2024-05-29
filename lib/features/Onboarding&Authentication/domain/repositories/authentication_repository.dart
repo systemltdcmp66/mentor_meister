@@ -23,4 +23,6 @@ abstract class AuthenticationRepository {
     required UpdateUserAction action,
     required dynamic userData,
   });
+
+  ResultFuture<List<LocaleUser>> getAllUsers();
 }

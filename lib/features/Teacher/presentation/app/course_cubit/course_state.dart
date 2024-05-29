@@ -32,6 +32,35 @@ class CourseFetched extends CourseState {
   List<String> get props => courses.map((e) => e.id).toList();
 }
 
+class EnrollingCourse extends CourseState {
+  const EnrollingCourse();
+}
+
+class GettingEnrolledCourses extends CourseState {
+  const GettingEnrolledCourses();
+}
+
+class EnrolledCoursesFetched extends CourseState {
+  const EnrolledCoursesFetched(this.enrolledCourses);
+
+  final List<Course> enrolledCourses;
+
+  @override
+  List<String> get props => enrolledCourses.map((e) => e.id).toList();
+}
+
+class CourseEnrolled extends CourseState {
+  const CourseEnrolled();
+}
+
+class GettinngEnrolledCoursedError extends CourseState {
+  final String message;
+  const GettinngEnrolledCoursedError(this.message);
+
+  @override
+  List<String> get props => [message];
+}
+
 class CourseError extends CourseState {
   final String message;
   const CourseError(this.message);

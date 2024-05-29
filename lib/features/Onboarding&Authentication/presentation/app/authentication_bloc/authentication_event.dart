@@ -45,6 +45,10 @@ class ForgotPasswordEvent extends AuthenticationEvent {
   List<Object> get props => [email];
 }
 
+class GetAllUsersEvent extends AuthenticationEvent {
+  const GetAllUsersEvent();
+}
+
 class UpdateUserEvent extends AuthenticationEvent {
   const UpdateUserEvent({
     required this.action,

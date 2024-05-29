@@ -4,7 +4,6 @@ import 'package:mentormeister/features/Onboarding&Authentication/domain/usecases
 import 'package:mentormeister/features/Onboarding&Authentication/domain/usecases/is_a_student.dart';
 import 'package:mentormeister/features/Onboarding&Authentication/domain/usecases/is_a_teacher.dart';
 import 'package:mentormeister/features/Onboarding&Authentication/presentation/app/ask_page_cubit/ask_page_state.dart';
-import 'package:mentormeister/features/Student/teachers.dart';
 
 class AskPageCubit extends Cubit<AskPageState> {
   AskPageCubit({

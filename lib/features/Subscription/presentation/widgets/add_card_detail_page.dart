@@ -1,6 +1,6 @@
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
 import 'package:mentormeister/commons/widgets/custom_button.dart';
-import '../../commons/widgets/custom_appbar.dart';
+import '../../../../commons/widgets/custom_appbar.dart';
 
 class AddCardDetailPage extends StatefulWidget {
   final String? selectedCardName;

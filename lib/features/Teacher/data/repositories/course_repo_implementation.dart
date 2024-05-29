@@ -32,4 +32,34 @@ class CourseRepositoryImpl implements CourseRepository {
       );
     }
   }
+
+  @override
+  ResultFuture<void> enrolCourse(String courseId) async {
+    try {
+      await _remoteDataSrc.enrolCourse(courseId);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(
+        ServerFailure(
+          message: e.message,
+          statusCode: e.statusCode,
+        ),
+      );
+    }
+  }
+
+  @override
+  ResultFuture<List<Course>> getEnrolledCourses() async {
+    try {
+      final enrolledCourses = await _remoteDataSrc.getEnrolledCourses();
+      return Right(enrolledCourses);
+    } on ServerException catch (e) {
+      return Left(
+        ServerFailure(
+          message: e.message,
+          statusCode: e.statusCode,
+        ),
+      );
+    }
+  }
 }

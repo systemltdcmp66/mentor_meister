@@ -7,4 +7,8 @@ abstract class CourseRepository {
   ResultFuture<void> createCourse(Course course);
 
   ResultFuture<List<Course>> getCourses();
+
+  ResultFuture<void> enrolCourse(String courseId);
+
+  ResultFuture<List<Course>> getEnrolledCourses();
 }

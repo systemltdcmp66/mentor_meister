@@ -1,14 +1,22 @@
+import 'package:mentormeister/features/Contact/presentation/widgets/pop_app_bar.dart';
+import 'package:mentormeister/features/Teacher/data/models/course_model.dart';
 import 'package:mentormeister/features/Teacher/my_courses/quizes.dart';
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
-
 import 'assignments.dart';
 import 'lessons.dart';
 
 class CourseDetailScreen extends StatefulWidget {
-  const CourseDetailScreen({super.key});
+  const CourseDetailScreen({
+    required this.courseModel,
+    super.key,
+  });
+
+  final CourseModel courseModel;
 
   @override
   State<CourseDetailScreen> createState() => _CourseDetailScreenState();
+
+  static const routeName = 'course-detail';
 }
 
 class _CourseDetailScreenState extends State<CourseDetailScreen>
@@ -38,12 +46,60 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: CustomColor.primaryBGColor,
+      appBar: const AppBarWithPop(
+        text: 'Course Detail',
+      ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min, // Set mainAxisSize to min
         children: [
-          SizedBox(
-            height: 65.h,
+          Card(
+            elevation: 0,
+            child: Padding(
+              padding: EdgeInsets.all(Dimensions.paddingSize),
+              child: Row(
+                children: [
+                  Container(
+                    width: 55.w,
+                    height: 55.h,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      image: DecorationImage(
+                        image: widget.courseModel.image!
+                                .contains('assets/defaults/default_course.png')
+                            ? const AssetImage(
+                                'assets/defaults/default_course.png')
+                            : NetworkImage(widget.courseModel.image!)
+                                as ImageProvider,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: Dimensions.widthSize),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.courseModel.title,
+                          style: CustomStyle.interh2,
+                        ),
+                        const SizedBox(height: 4),
+                        widget.courseModel.numberOfAssignments <= 1
+                            ? Text(
+                                '15 Lessons | ${widget.courseModel.numberOfAssignments} Assignment | 5 Quizzes',
+                                style: CustomStyle.fpStyle,
+                              )
+                            : Text(
+                                '15 Lessons | ${widget.courseModel.numberOfAssignments} Assignments | 5 Quizzes',
+                                style: CustomStyle.fpStyle,
+                              ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
           Align(
             alignment: Alignment.topCenter,

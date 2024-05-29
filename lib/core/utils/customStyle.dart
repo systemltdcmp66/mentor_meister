@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mentormeister/core/utils/basic_screen_imports.dart';
 import 'custom_color.dart';
 import 'dimensions.dart';
 

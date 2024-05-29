@@ -1,15 +1,16 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mentormeister/commons/app/providers/teacher_sign_up_controller.dart';
-import 'package:mentormeister/commons/app/providers/user_provider.dart';
 import 'package:mentormeister/core/services/injection_container.dart';
 import 'package:mentormeister/core/utils/core_utils.dart';
 import 'package:mentormeister/features/Onboarding&Authentication/data/models/user_model.dart';
 import 'package:mentormeister/features/Teacher/data/models/teacher_info_model.dart';
 import 'package:mentormeister/features/Teacher/presentation/app/teacher_sign_up_cubit/teacher_sign_up_cubit.dart';
 import 'package:mentormeister/features/Teacher/presentation/app/teacher_sign_up_cubit/teacher_sign_up_state.dart';
-import 'package:mentormeister/features/Teacher/presentation/widgets/bottom_nav_bar.dart';
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mentormeister/features/Teacher/presentation/widgets/bottom_nav_bar.dart';
+import 'package:mentormeister/features/Teacher/utils/teacher_utils.dart';
 import '../../../tabs/Description.dart';
 import '../../../tabs/about.dart';
 import '../../../tabs/availability.dart';
@@ -28,72 +29,132 @@ class TutorSignUp extends StatefulWidget {
 class _TutorSignUpState extends State<TutorSignUp> {
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-          backgroundColor: CustomColor.primaryBGColor,
-          body: BlocConsumer<TeacherSignUpCubit, TeacherSignUpState>(
-            listener: (context, state) {
-              if (state is TeacherSignUpError) {
-                CoreUtils.showSnackar(
-                  context: context,
-                  message: state.message,
-                );
-              } else if (state is TeacherInfoPosted) {
-                sl<SharedPreferences>().setBool('teacherId', true);
-                Navigator.pushReplacementNamed(context, '/');
-              }
-            },
-            builder: (context, state) {
-              if (state is PostingTeacherInfo || state is GettingTeacherInfo) {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      CustomColor.redColor,
-                    ),
-                  ),
-                );
-              }
-              return Stack(
-                children: <Widget>[
-                  SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Container(
-                          height: MediaQuery.of(context).size.height * 0.3,
-                          color: CustomColor.blackColor,
-                          child: Column(
-                            crossAxisAlignment: crossCenter,
-                            mainAxisAlignment: mainStart,
-                            children: [
-                              logo(),
-                              space(),
-                              text('Teacher Signup'),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          margin: EdgeInsets.only(
-                              top: MediaQuery.of(context).size.height * 0.7),
-                          child: Center(
-                              child: Padding(
-                            padding: EdgeInsets.all(Dimensions.paddingSize),
-                          )),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Positioned(
-                    top: MediaQuery.of(context).size.height * 0.2,
-                    left: 0,
-                    right: 0,
-                    child: const TutorForm(),
-                  )
-                ],
+    return StreamBuilder<List<LocalUserModel>>(
+      stream: TeacherUtils.getAllUsers,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SafeArea(
+            child: Scaffold(
+              backgroundColor: CustomColor.primaryBGColor,
+              body: Center(
+                child: CircularProgressIndicator(
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(CustomColor.redColor),
+                ),
+              ),
+            ),
+          );
+        } else if (snapshot.hasData) {
+          final List<LocalUserModel> users = snapshot.data!;
+          for (LocalUserModel user in users) {
+            if (user.uid == sl<FirebaseAuth>().currentUser!.uid &&
+                user.alreadyVisitTutorSignUpPage == true) {
+              sl<FirebaseFirestore>().collection('users').doc(user.uid).update(
+                {
+                  'isFirstTime': true,
+                },
               );
-            },
-          )),
+            }
+            if (user.uid == sl<FirebaseAuth>().currentUser!.uid &&
+                user.teacherId == null &&
+                user.alreadyVisitTutorSignUpPage == false &&
+                user.alreadyVisitTutorAskPage == true &&
+                user.isFirstTime == true) {
+              return const BottomNavBar(
+                isStudent: true,
+              );
+            }
+            if (user.uid == sl<FirebaseAuth>().currentUser!.uid &&
+                user.alreadyVisitTutorSignUpPage == false) {
+              sl<FirebaseFirestore>().collection('users').doc(user.uid).update(
+                {
+                  'isFirstTime': false,
+                },
+              );
+              return SafeArea(
+                child: Scaffold(
+                    backgroundColor: CustomColor.primaryBGColor,
+                    body: BlocConsumer<TeacherSignUpCubit, TeacherSignUpState>(
+                      listener: (context, state) {
+                        if (state is TeacherSignUpError) {
+                          CoreUtils.showSnackar(
+                            context: context,
+                            message: state.message,
+                          );
+                        } else if (state is TeacherInfoPosted) {
+                          Navigator.pushReplacementNamed(context, '/');
+                        }
+                      },
+                      builder: (context, state) {
+                        if (state is PostingTeacherInfo ||
+                            state is GettingTeacherInfo) {
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                CustomColor.redColor,
+                              ),
+                            ),
+                          );
+                        }
+                        return Stack(
+                          children: <Widget>[
+                            SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: <Widget>[
+                                  Container(
+                                    height: MediaQuery.of(context).size.height *
+                                        0.3,
+                                    color: CustomColor.blackColor,
+                                    child: Column(
+                                      crossAxisAlignment: crossCenter,
+                                      mainAxisAlignment: mainStart,
+                                      children: [
+                                        logo(),
+                                        space(),
+                                        text('Teacher Signup'),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(
+                                        top:
+                                            MediaQuery.of(context).size.height *
+                                                0.7),
+                                    child: Center(
+                                        child: Padding(
+                                      padding: EdgeInsets.all(
+                                          Dimensions.paddingSize),
+                                    )),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Positioned(
+                              top: MediaQuery.of(context).size.height * 0.2,
+                              left: 0,
+                              right: 0,
+                              child: const TutorForm(),
+                            )
+                          ],
+                        );
+                      },
+                    )),
+              );
+            }
+            if (user.uid == sl<FirebaseAuth>().currentUser!.uid &&
+                user.teacherId != null &&
+                user.alreadyVisitTutorSignUpPage == true &&
+                user.isFirstTime == true) {
+              return const BottomNavBar(
+                isStudent: false,
+              );
+            }
+          }
+        }
+        return const SizedBox.shrink();
+      },
     );
   }
 

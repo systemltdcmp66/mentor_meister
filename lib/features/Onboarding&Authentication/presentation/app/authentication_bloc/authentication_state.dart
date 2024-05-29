@@ -36,6 +36,15 @@ class AuthenticationLoading extends AuthenticationState {
   const AuthenticationLoading();
 }
 
+class AllUsersFetched extends AuthenticationState {
+  const AllUsersFetched(this.users);
+
+  final List<LocaleUser> users;
+
+  @override
+  List<String> get props => users.map((e) => e.uid).toList();
+}
+
 class AuthenticationError extends AuthenticationState {
   const AuthenticationError(this.message);
 

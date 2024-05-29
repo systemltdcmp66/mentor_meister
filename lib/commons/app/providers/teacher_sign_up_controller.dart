@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'dart:math';
-
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
 
 class TeacherSignUpController extends ChangeNotifier {

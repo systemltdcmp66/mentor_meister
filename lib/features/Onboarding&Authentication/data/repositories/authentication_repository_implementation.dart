@@ -90,4 +90,19 @@ class AuthenticationRepositoryImplementation
       );
     }
   }
+
+  @override
+  ResultFuture<List<LocaleUser>> getAllUsers() async {
+    try {
+      final users = await _remoteDataSource.getAllUsers();
+      return Right(users);
+    } on ServerException catch (e) {
+      return Left(
+        ServerFailure(
+          message: e.message,
+          statusCode: e.statusCode,
+        ),
+      );
+    }
+  }
 }

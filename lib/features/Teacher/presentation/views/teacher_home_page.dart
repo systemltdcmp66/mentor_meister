@@ -1,17 +1,21 @@
-import 'dart:io';
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mentormeister/commons/app/providers/subscription_provider.dart';
 import 'package:mentormeister/commons/app/providers/teacher_provider.dart';
 import 'package:mentormeister/commons/widgets/no_found_text.dart';
+import 'package:mentormeister/core/services/injection_container.dart';
 import 'package:mentormeister/core/utils/core_utils.dart';
+import 'package:mentormeister/features/Subscription/presentation/cubit/subscription_cubit.dart';
+import 'package:mentormeister/features/Subscription/presentation/cubit/subscription_state.dart';
 import 'package:mentormeister/features/Teacher/data/models/course_model.dart';
 import 'package:mentormeister/features/Teacher/presentation/app/course_cubit/course_cubit.dart';
 import 'package:mentormeister/features/Teacher/presentation/app/course_cubit/course_state.dart';
+import 'package:mentormeister/features/Teacher/presentation/widgets/create_assignment.dart';
 import 'package:mentormeister/features/Teacher/presentation/widgets/create_course.dart';
 import 'package:mentormeister/features/Teacher/presentation/widgets/create_quiz.dart';
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
+import 'package:mentormeister/features/payment/data/models/subscription_model.dart';
 import '../../../../models/upcoming_session_model.dart';
-import '../../../../models/video_cardmodel.dart';
 
 class TeacherHomePage extends StatefulWidget {
   const TeacherHomePage({Key? key}) : super(key: key);
@@ -25,6 +29,14 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
   void initState() {
     super.initState();
     context.read<TeacherProvider>().getTeacherInfo();
+    if (!context.read<TeacherProvider>().isLoading2) {
+      context.read<TeacherProvider>().getTeacherBalances(
+            context.read<TeacherProvider>().teacherInfo![0].id,
+          );
+    }
+
+    context.read<SubscriptionCubit>().getSubscriptionData();
+
     context.read<CourseCubit>().getCourses();
   }
 
@@ -33,166 +45,233 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: CustomColor.primaryBGColor,
-      body: BlocConsumer<CourseCubit, CourseState>(
+      body: BlocListener<SubscriptionCubit, SubscriptionState>(
         listener: (_, state) {
-          if (state is CourseError) {
-            CoreUtils.showSnackar(
-              context: context,
-              message: state.message,
-            );
+          if (state is SubscriptionError) {
+            context.read<SubscriptionCubit>().getSubscriptionData();
+          } else if (state is SubscriptionDataFetched &&
+              state.subscriptions.isNotEmpty) {
+            final data = state.subscriptions as List<SubscriptionModel>;
+
+            for (SubscriptionModel subscriptionModel in data) {
+              if (subscriptionModel.teacherId ==
+                  context.read<TeacherProvider>().teacherInfo![0].id) {
+                context.read<SubscriptionProvider>().isSubscribed = true;
+                if (subscriptionModel.type == "free") {
+                  context.read<SubscriptionProvider>().package = "Free";
+                  context.read<SubscriptionProvider>().price = 0;
+                  context.read<SubscriptionProvider>().validTill =
+                      subscriptionModel.paidAt.add(
+                    const Duration(days: 7),
+                  );
+                } else if (subscriptionModel.type == "monthly") {
+                  context.read<SubscriptionProvider>().package = "Monthly";
+                  context.read<SubscriptionProvider>().price = 50;
+                  context.read<SubscriptionProvider>().validTill =
+                      subscriptionModel.paidAt.add(
+                    const Duration(
+                      days: 31,
+                    ),
+                  );
+                } else if (subscriptionModel.type == "annual") {
+                  context.read<SubscriptionProvider>().package = "Annual";
+                  context.read<SubscriptionProvider>().price = 50;
+                  context.read<SubscriptionProvider>().validTill =
+                      subscriptionModel.paidAt.add(
+                    const Duration(
+                      days: 365,
+                    ),
+                  );
+                }
+              }
+            }
           }
         },
-        builder: (context, state) {
-          if (state is GettingCourse) {
-            return const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  CustomColor.redColor,
-                ),
-              ),
-            );
-          } else if (state is CourseFetched && state.courses.isEmpty) {
-            return const NoFoundtext(
-              'No courses found\nPlease contact teacher or if you are admin add courses',
-            );
-          } else if (state is CourseFetched) {
-            final courses = state.courses
-              ..sort(
-                (a, b) => b.updatedAt.compareTo(
-                  a.updatedAt,
+        child: BlocConsumer<CourseCubit, CourseState>(
+          listener: (_, state) {
+            if (state is CourseError) {
+              CoreUtils.showSnackar(
+                context: context,
+                message: state.message,
+              );
+            }
+          },
+          builder: (context, state) {
+            if (state is GettingCourse) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    CustomColor.redColor,
+                  ),
                 ),
               );
+            } else if (state is CourseFetched &&
+                state.courses
+                    .where((element) =>
+                        element.userId == sl<FirebaseAuth>().currentUser!.uid)
+                    .toList()
+                    .isEmpty) {
+              return const NoFoundtext(
+                'No courses found\nPlease contact teacher or if you are admin add courses',
+              );
+            } else if (state is CourseFetched) {
+              final specificTeacherCourses = state.courses
+                  .where(
+                    (element) =>
+                        element.userId == sl<FirebaseAuth>().currentUser!.uid,
+                  )
+                  .toList();
+              final courses = specificTeacherCourses
+                ..sort(
+                  (a, b) => b.updatedAt.compareTo(
+                    a.updatedAt,
+                  ),
+                );
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Black container with user's name
-                welcomeText(context),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Black container with user's name
+                  welcomeText(context),
 
-                SizedBox(height: Dimensions.heightSize),
-                // Card with available balance and language selection
-                Card(
-                  elevation: 0,
-                  margin: EdgeInsets.all(8.r),
-                  child: Padding(
-                    padding: EdgeInsets.all(8.r),
+                  SizedBox(height: Dimensions.heightSize),
+                  // Card with available balance and language selection
+                  Card(
+                    elevation: 0,
+                    margin: EdgeInsets.all(8.r),
+                    child: Padding(
+                      padding: EdgeInsets.all(8.r),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Available Balance',
+                            style: CustomStyle.pBStyle,
+                          ),
+                          SizedBox(width: 8.w),
+                          context
+                                  .read<TeacherProvider>()
+                                  .teacherBalances
+                                  .isEmpty
+                              ? const Text(
+                                  'No Balance',
+                                  style: TextStyle(
+                                    color: CustomColor.redColor,
+                                  ),
+                                )
+                              : DropdownButton<String>(
+                                  value: context
+                                      .read<TeacherProvider>()
+                                      .teacherBalances[0],
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                  ), // Default value
+                                  items: context
+                                      .read<TeacherProvider>()
+                                      .teacherBalances
+                                      .map((String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(
+                                        value,
+                                        style: const TextStyle(
+                                          color: CustomColor.redColor,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (String? newValue) {
+                                    // Handle balance dropdown change
+                                  },
+                                ),
+                          SizedBox(width: Dimensions.widthSize),
+                          Expanded(
+                            child: DropdownButton<String>(
+                              value: 'English',
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                              ), // Default value
+                              items: <String>['English', 'Urdu', 'French']
+                                  .map((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(
+                                    value,
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (String? newValue) {
+                                // Handle language dropdown change
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Row with "My Courses" text and "See All" button
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: Dimensions.paddingSizeHorizontalSize),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Available Balance',
-                          style: CustomStyle.pBStyle,
+                          'My Courses',
+                          style: CustomStyle.blackh1,
                         ),
-                        SizedBox(width: 8.w),
-                        DropdownButton<String>(
-                          value: '\$30.00 USD',
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                          ), // Default value
-                          items: <String>[
-                            '\$30.00 USD',
-                            '\$40.00 USD',
-                            '\$50.00 USD'
-                          ].map((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(
-                                value,
-                                style: const TextStyle(
-                                    color: CustomColor.redColor),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (String? newValue) {
-                            // Handle balance dropdown change
-                          },
-                        ),
-                        SizedBox(width: Dimensions.widthSize),
-                        Expanded(
-                          child: DropdownButton<String>(
-                            value: 'English',
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                            ), // Default value
-                            items: <String>['English', 'Urdu', 'French']
-                                .map((String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(
-                                  value,
-                                  style: const TextStyle(color: Colors.grey),
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (String? newValue) {
-                              // Handle language dropdown change
+                        if (courses.length > 3)
+                          TextButton(
+                            onPressed: () {
+                              // Your logic here
                             },
+                            child: Text(
+                              'See All',
+                              style: CustomStyle.fpStyle,
+                            ),
                           ),
-                        ),
                       ],
                     ),
                   ),
-                ),
-                // Row with "My Courses" text and "See All" button
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: Dimensions.paddingSizeHorizontalSize),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'My Courses',
-                        style: CustomStyle.blackh1,
-                      ),
-                      if (courses.length > 3)
-                        TextButton(
-                          onPressed: () {
-                            // Your logic here
-                          },
-                          child: Text(
-                            'See All',
-                            style: CustomStyle.fpStyle,
-                          ),
-                        ),
-                    ],
+                  // List of my courses Cards
+                  SizedBox(
+                    height: 200.h,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: courses.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return buildVideoCard(
+                          courses[index] as CourseModel,
+                        );
+                      },
+                    ),
                   ),
-                ),
-                // List of my courses Cards
-                SizedBox(
-                  height: 200.h,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: courses.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return buildVideoCard(
-                        courses[index] as CourseModel,
-                      );
-                    },
+                  // Recent courses
+                  Padding(
+                    padding:
+                        EdgeInsets.all(Dimensions.paddingSizeHorizontalSize),
+                    child: Text(
+                      'Upcoming Live Sessions',
+                      style: CustomStyle.blackh1,
+                    ),
                   ),
-                ),
-                // Recent courses
-                Padding(
-                  padding: EdgeInsets.all(Dimensions.paddingSizeHorizontalSize),
-                  child: Text(
-                    'Upcoming Live Sessions',
-                    style: CustomStyle.blackh1,
+                  // List of recent courses Cards
+                  Expanded(
+                    child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      scrollDirection: Axis.vertical,
+                      itemCount: upcomingSessions.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return buildLiveSessionCard(upcomingSessions[index]);
+                      },
+                    ),
                   ),
-                ),
-                // List of recent courses Cards
-                Expanded(
-                  child: ListView.builder(
-                    padding: EdgeInsets.zero,
-                    scrollDirection: Axis.vertical,
-                    itemCount: upcomingSessions.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return buildLiveSessionCard(upcomingSessions[index]);
-                    },
-                  ),
-                ),
-              ],
-            );
-          }
-          return const SizedBox.shrink();
-        },
+                ],
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -233,30 +312,63 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                         leading: buildContainer(Icons.mode_edit_sharp),
                         title: const Text('Create Course'),
                         onTap: () {
-                          Navigator.of(context).pushNamed(
-                            CreateCourseScreen.routeName,
-                          );
+                          if (context.read<SubscriptionProvider>().package ==
+                              "Free") {
+                            Navigator.of(context).pop();
+                            CoreUtils.showSnackar(
+                              context: context,
+                              message:
+                                  'You need to buy the app subscription(monthly or annual) '
+                                  'in order to sell courses and make live',
+                            );
+                          } else {
+                            Navigator.of(context).pushNamed(
+                              CreateCourseScreen.routeName,
+                            );
+                          }
                         },
                       ),
                       ListTile(
                         leading: buildContainer(Icons.add_box),
                         title: const Text('Create Assignment'),
                         onTap: () {
-                          Navigator.of(context).pushNamed(
-                            CreateCourseScreen.routeName,
-                          );
+                          if (context.read<SubscriptionProvider>().package ==
+                              "Free") {
+                            Navigator.of(context).pop();
+                            CoreUtils.showSnackar(
+                              context: context,
+                              message:
+                                  'You need to buy the app subscription(monthly or annual) '
+                                  'in order to sell courses and make live',
+                            );
+                          } else {
+                            Navigator.of(context).pushNamed(
+                              CreateAssignmentScreen.routeName,
+                            );
+                          }
                         },
                       ),
                       ListTile(
                         leading: buildContainer(Icons.edit),
                         title: const Text('Create Quiz'),
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const CreateQuizScreen(),
-                            ),
-                          );
+                          if (context.read<SubscriptionProvider>().package ==
+                              "Free") {
+                            Navigator.of(context).pop();
+                            CoreUtils.showSnackar(
+                              context: context,
+                              message:
+                                  'You need to buy the app subscription(monthly or annual) '
+                                  'in order to sell courses and make live',
+                            );
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const CreateQuizScreen(),
+                              ),
+                            );
+                          }
                         },
                       ),
                     ],

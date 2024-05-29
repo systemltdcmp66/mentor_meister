@@ -32,6 +32,8 @@ abstract class AuthenticationRemoteDataSource {
     required UpdateUserAction action,
     required dynamic userData,
   });
+
+  Future<List<LocalUserModel>> getAllUsers();
 }
 
 class AuthenticationRemoteDataSourceImplementation
@@ -121,7 +123,11 @@ class AuthenticationRemoteDataSourceImplementation
 
       await userCredential.user!.updatePhotoURL(kDefaultAvatar);
       await userCredential.user!.updateDisplayName(name);
-      await _setUserData(_authClient.currentUser!, email, phoneNumber);
+      await _setUserData(
+        _authClient.currentUser!,
+        email,
+        phoneNumber,
+      );
     } on ServerException {
       rethrow;
     } on FirebaseAuthException catch (e) {
@@ -204,13 +210,18 @@ class AuthenticationRemoteDataSourceImplementation
   }
 
   Future<void> _setUserData(
-      User user, String fallbackEmail, String fallBackPhoneNumber) async {
+    User user,
+    String fallbackEmail,
+    String fallBackPhoneNumber, {
+    bool? isFirstTime = true,
+  }) async {
     await _cloudStoreClient.collection('users').doc(user.uid).set(
           LocalUserModel(
             uid: user.uid,
             name: user.displayName ?? '',
             phoneNumber: user.phoneNumber ?? fallBackPhoneNumber,
             email: user.email ?? fallbackEmail,
+            isFirstTime: isFirstTime,
           ).toMap(),
         );
   }
@@ -224,5 +235,38 @@ class AuthenticationRemoteDataSourceImplementation
         .collection('users')
         .doc(_authClient.currentUser!.uid)
         .update(data);
+  }
+
+  @override
+  Future<List<LocalUserModel>> getAllUsers() async {
+    try {
+      return await _cloudStoreClient
+          .collection('users')
+          .where(
+            'uid',
+            isNotEqualTo: _authClient.currentUser!.uid,
+          )
+          .get()
+          .then(
+            (value) => value.docs
+                .map(
+                  (e) => LocalUserModel.fromMap(
+                    e.data(),
+                  ),
+                )
+                .toList(),
+          );
+    } on FirebaseException catch (e) {
+      throw ServerException(
+        message: e.toString(),
+        statusCode: e.code,
+      );
+    } catch (e, s) {
+      debugPrintStack(stackTrace: s);
+      throw ServerException(
+        message: e.toString(),
+        statusCode: 'error-is-from-us',
+      );
+    }
   }
 }

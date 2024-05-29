@@ -9,7 +9,11 @@ class LocaleUser extends Equatable {
     this.profilePic,
     this.bio,
     this.points = 0,
+    this.isFirstTime = true,
+    this.alreadyVisitTutorSignUpPage = false,
+    this.alreadyVisitTutorAskPage = false,
     this.enrolledCourseIds = const [],
+    this.hiredTeacherIds = const [],
     this.followers = const [],
     this.following = const [],
     this.groupIds = const [],
@@ -33,10 +37,14 @@ class LocaleUser extends Equatable {
   final String? bio;
   final int? points;
   final List<String>? enrolledCourseIds;
+  final List<String>? hiredTeacherIds;
   final List<String>? groupIds; // For chatting
   final List<String>? followers;
   final List<String>? following;
   final String? teacherId;
+  final bool? isFirstTime;
+  final bool? alreadyVisitTutorSignUpPage;
+  final bool? alreadyVisitTutorAskPage;
 
   @override
   List<Object?> get props => [
@@ -50,5 +58,6 @@ class LocaleUser extends Equatable {
         groupIds!.length,
         followers!.length,
         following!.length,
+        hiredTeacherIds!.length,
       ];
 }

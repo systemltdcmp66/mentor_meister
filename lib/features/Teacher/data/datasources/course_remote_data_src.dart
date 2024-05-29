@@ -1,10 +1,10 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:mentormeister/core/errors/exceptions.dart';
 import 'package:mentormeister/features/Group/data/models/group_model.dart';
+import 'package:mentormeister/features/Onboarding&Authentication/data/models/user_model.dart';
 import 'package:mentormeister/features/Teacher/data/models/course_model.dart';
 import 'package:mentormeister/features/Teacher/domain/entities/course.dart';
 
@@ -14,6 +14,10 @@ abstract class CourseRemoteDataSrc {
   Future<void> createCourse(Course course);
 
   Future<List<CourseModel>> getCourses();
+
+  Future<void> enrolCourse(String courseId);
+
+  Future<List<CourseModel>> getEnrolledCourses();
 }
 
 class CourseRemoteDataSrcImpl implements CourseRemoteDataSrc {
@@ -101,6 +105,112 @@ class CourseRemoteDataSrcImpl implements CourseRemoteDataSrc {
                 )
                 .toList(),
           );
+    } on ServerException {
+      rethrow;
+    } on FirebaseException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Unkown error occurred',
+        statusCode: e.code,
+      );
+    } catch (e) {
+      throw ServerException(
+        message: e.toString(),
+        statusCode: '505',
+      );
+    }
+  }
+
+  @override
+  Future<void> enrolCourse(String courseId) async {
+    try {
+      final user = _auth.currentUser;
+
+      if (user == null) {
+        throw const ServerException(
+          message: 'User is not authenticated',
+          statusCode: '401',
+        );
+      }
+
+      List<String> previousCourseIds = [];
+      int previousNumberOfStudents = 0;
+      await _firestore
+          .collection('users')
+          .doc(_auth.currentUser!.uid)
+          .get()
+          .then((value) {
+        previousCourseIds =
+            LocalUserModel.fromMap(value.data()!).enrolledCourseIds ?? [];
+      });
+
+      await _firestore.collection('courses').doc(courseId).get().then((value) {
+        previousNumberOfStudents =
+            CourseModel.fromMap(value.data()!).numberOfAssignments == 0
+                ? 1
+                : CourseModel.fromMap(value.data()!).numberOfAssignments + 1;
+      });
+
+      previousCourseIds.add(courseId);
+
+      await _firestore.collection('users').doc(_auth.currentUser!.uid).update({
+        'enrolledCourseIds': previousCourseIds,
+      });
+      await _firestore.collection('courses').doc(courseId).update({
+        'numberOfStudents': previousNumberOfStudents,
+      });
+    } on ServerException {
+      rethrow;
+    } on FirebaseException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Unkown error occurred',
+        statusCode: e.code,
+      );
+    } catch (e) {
+      throw ServerException(
+        message: e.toString(),
+        statusCode: '505',
+      );
+    }
+  }
+
+  @override
+  Future<List<CourseModel>> getEnrolledCourses() async {
+    try {
+      final user = _auth.currentUser;
+
+      if (user == null) {
+        throw const ServerException(
+          message: 'User is not authenticated',
+          statusCode: '401',
+        );
+      }
+      List<String> enrolledCourseIds = [];
+
+      await _firestore
+          .collection('users')
+          .doc(_auth.currentUser!.uid)
+          .get()
+          .then(
+        (value) {
+          enrolledCourseIds =
+              LocalUserModel.fromMap(value.data()!).enrolledCourseIds ?? [];
+        },
+      );
+
+      if (enrolledCourseIds.isEmpty) {
+        return [];
+      }
+      List<CourseModel> enrolledCourses = [];
+      for (String courseId in enrolledCourseIds) {
+        await _firestore
+            .collection('courses')
+            .doc(courseId)
+            .get()
+            .then((value) {
+          enrolledCourses.add(CourseModel.fromMap(value.data()!));
+        });
+      }
+      return enrolledCourses;
     } on ServerException {
       rethrow;
     } on FirebaseException catch (e) {

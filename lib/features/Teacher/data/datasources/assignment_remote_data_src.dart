@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:mentormeister/core/errors/exceptions.dart';
 import 'package:mentormeister/features/Teacher/data/models/assignment_model.dart';
+import 'package:mentormeister/features/Teacher/data/models/course_model.dart';
 import 'package:mentormeister/features/Teacher/domain/entities/assignment.dart';
 
 abstract class AssignmentRemoteDataSrc {
@@ -39,7 +40,7 @@ class AssignmentRemoteDataSrcImpl implements AssignmentRemoteDataSrc {
       var assignmentModel = (assignment as AssignmentModel).copyWith(
         id: assignmentRef.id,
       );
-
+      int previousNumberOfAssignments = 0;
       if (assignmentModel.isAssignmentFile) {
         final fileRef = _storage.ref().child(
             'assignments/${assignmentModel.courseName}/${assignmentModel.assignmentNumber}');
@@ -48,6 +49,22 @@ class AssignmentRemoteDataSrcImpl implements AssignmentRemoteDataSrc {
       await assignmentRef.set(
         assignmentModel.toMap(),
       );
+      await _firestore
+          .collection('courses')
+          .doc(assignmentModel.courseId)
+          .get()
+          .then((value) {
+        previousNumberOfAssignments =
+            CourseModel.fromMap(value.data()!).numberOfAssignments == 0
+                ? 1
+                : CourseModel.fromMap(value.data()!).numberOfAssignments + 1;
+      });
+      await _firestore
+          .collection('courses')
+          .doc(assignmentModel.courseId)
+          .update({
+        'numberOfAssignments': previousNumberOfAssignments,
+      });
     } on FirebaseException catch (e) {
       throw ServerException(
         message: e.message ?? 'Unkown error occurred',

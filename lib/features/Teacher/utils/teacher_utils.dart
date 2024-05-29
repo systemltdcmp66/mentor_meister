@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mentormeister/features/Onboarding&Authentication/data/models/user_model.dart';
 import 'package:mentormeister/features/Teacher/data/models/course_model.dart';
 import 'package:mentormeister/features/Teacher/data/models/teacher_info_model.dart';
 
@@ -40,6 +41,22 @@ class TeacherUtils {
                 .map(
                   (doc) => CourseModel.fromMap(
                     doc.data(),
+                  ),
+                )
+                .toList(),
+          );
+
+  static Stream<List<LocalUserModel>> get getAllUsers =>
+      FirebaseFirestore.instance
+          .collection(
+            'users',
+          )
+          .snapshots()
+          .map(
+            (event) => event.docs
+                .map(
+                  (e) => LocalUserModel.fromMap(
+                    e.data(),
                   ),
                 )
                 .toList(),

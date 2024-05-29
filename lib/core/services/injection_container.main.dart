@@ -9,6 +9,123 @@ Future<void> init() async {
   await _teacherSignUpInit();
   await _courseInit();
   await _assignmentInit();
+  await _feedbackInit();
+  await _messageInit();
+  await _coursePaymentInit();
+  await _subscriptionInit();
+}
+
+Future<void> _subscriptionInit() async {
+  sl
+    ..registerFactory(
+      () => SubscriptionCubit(
+        getSubscriptionData: sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => GetSubscriptionData(
+        sl(),
+      ),
+    )
+    ..registerLazySingleton<SubscriptionRepository>(
+      () => SubscriptionRepoImpl(
+        sl(),
+      ),
+    )
+    ..registerLazySingleton<SubscriptionRemoteDataSrc>(
+      () => SubscriptionRemoteDataSrcImpl(
+        authClient: sl(),
+        cloudStoreClient: sl(),
+      ),
+    );
+}
+
+Future<void> _coursePaymentInit() async {
+  sl
+    ..registerFactory(
+      () => PaymentCubit(
+        paypalPayment: sl(),
+        makeSubscription: sl(),
+        hiringPayment: sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => PaypalPayment(
+        sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => MakeSubscription(
+        sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => HiringPayment(
+        sl(),
+      ),
+    )
+    ..registerLazySingleton<CoursePaymentRepository>(
+      () => CoursePaymentRepoImpl(
+        sl(),
+      ),
+    )
+    ..registerLazySingleton<CoursePaymentRemoteDataSrc>(
+      () => CoursePaymentRemoteDataSrcImpl(
+        authClient: sl(),
+        cloudStoreClient: sl(),
+      ),
+    );
+}
+
+Future<void> _messageInit() async {
+  sl
+    ..registerFactory(
+      () => MessageBloc(
+        sendMessage: sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => SendMessage(
+        sl(),
+      ),
+    )
+    ..registerLazySingleton<MessageRepository>(
+      () => MessageRepositoryImplementation(
+        sl(),
+      ),
+    )
+    ..registerLazySingleton<MessageRemoteDataSrc>(
+      () => MessageRemoteDataSrcImpl(
+        auth: sl(),
+        firestore: sl(),
+        storage: sl(),
+      ),
+    );
+}
+
+Future<void> _feedbackInit() async {
+  sl
+    ..registerFactory(
+      () => FeedbackCubit(
+        sendFeedback: sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => SendFeedback(
+        sl(),
+      ),
+    )
+    ..registerLazySingleton<FeedbackRepository>(
+      () => FeedbackRepositoryImplementation(
+        sl(),
+      ),
+    )
+    ..registerLazySingleton<FeedbackRemoteDataSrc>(
+      () => FeedbackRemoteDataSrcImpl(
+        auth: sl(),
+        firestore: sl(),
+      ),
+    );
 }
 
 Future<void> _assignmentInit() async {
@@ -49,6 +166,8 @@ Future<void> _courseInit() async {
       () => CourseCubit(
         createCourse: sl(),
         getCourses: sl(),
+        enrollCourse: sl(),
+        getEnrolledCourses: sl(),
       ),
     )
     ..registerLazySingleton(
@@ -58,6 +177,16 @@ Future<void> _courseInit() async {
     )
     ..registerLazySingleton(
       () => GetCourses(
+        sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => EnrollCourse(
+        sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => GetEnrolledCourses(
         sl(),
       ),
     )
@@ -129,6 +258,7 @@ Future<void> _authenticationInit() async {
         signUp: sl(),
         forgotPassword: sl(),
         updateUser: sl(),
+        getAllUsers: sl(),
       ),
     )
 
@@ -150,6 +280,11 @@ Future<void> _authenticationInit() async {
     )
     ..registerLazySingleton(
       () => UpdateUser(
+        sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => GetAllUsers(
         sl(),
       ),
     )
@@ -230,6 +365,11 @@ Future<void> _teacherSignUpInit() async {
       () => TeacherSignUpCubit(
         postTeacherInformations: sl(),
         getTeacherInformations: sl(),
+        getAllTeacherInformations: sl(),
+        hireATeacher: sl(),
+        getHiredTeacherInfos: sl(),
+        getTeacherUsersData: sl(),
+        getTeacherCourses: sl(),
       ),
     )
     ..registerLazySingleton(
@@ -239,6 +379,31 @@ Future<void> _teacherSignUpInit() async {
     )
     ..registerLazySingleton(
       () => GetTeacherInformations(
+        sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => GetAllTeacherInformations(
+        sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => HireATeacher(
+        sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => GetHiredTeacherInfos(
+        sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => GetTeacherUsersData(
+        sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => GetTeacherCourses(
         sl(),
       ),
     )

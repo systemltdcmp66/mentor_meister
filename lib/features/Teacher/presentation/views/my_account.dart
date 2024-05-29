@@ -1,69 +1,202 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mentormeister/commons/app/providers/subscription_provider.dart';
+import 'package:mentormeister/commons/app/providers/teacher_provider.dart';
+import 'package:mentormeister/commons/app/providers/user_provider.dart';
 import 'package:mentormeister/core/services/injection_container.dart';
+import 'package:mentormeister/core/utils/core_utils.dart';
+import 'package:mentormeister/features/Contact/utils/chat_utils.dart';
 import 'package:mentormeister/features/Onboarding&Authentication/presentation/views/onboarding_screen.dart';
-import 'package:mentormeister/features/Subscription/subscription_plan_page.dart';
+import 'package:mentormeister/features/Subscription/presentation/cubit/subscription_cubit.dart';
+import 'package:mentormeister/features/Subscription/presentation/cubit/subscription_state.dart';
+import 'package:mentormeister/features/Subscription/presentation/widgets/subscription_plan_page.dart';
 import 'package:mentormeister/core/utils/basic_screen_imports.dart';
+import 'package:mentormeister/features/Teacher/my_courses/custom_app_bar.dart';
+import 'package:mentormeister/features/payment/data/models/subscription_model.dart';
 
-import '../../../../commons/widgets/custom_appbar.dart';
-import '../../../Subscription/rate_us.dart';
+import '../../../Subscription/presentation/widgets/rate_us.dart';
 
-class MyAccountScreen extends StatelessWidget {
-  const MyAccountScreen({super.key});
+class MyAccountScreen extends StatefulWidget {
+  const MyAccountScreen({
+    super.key,
+    required this.isStudent,
+  });
+
+  final bool isStudent;
+
+  @override
+  State<MyAccountScreen> createState() => _MyAccountScreenState();
+}
+
+class _MyAccountScreenState extends State<MyAccountScreen> {
+  @override
+  void initState() {
+    super.initState();
+    if (!widget.isStudent) {
+      context.read<SubscriptionCubit>().getSubscriptionData();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-          preferredSize:
-              Size.fromHeight(MediaQuery.of(context).size.height * 0.15),
-          child: const CustomAppBar(title: 'My Account')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              ///set to true when user have active subscription plan
-              _buildSubscriptionPlan(false, () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const SubscriptionPlanPage()));
-              }),
-              _buildAccountSection(),
-              _buildRowWithIconAndText(Icons.person, 'Profile', () {}),
-              _buildRowWithIconAndText(Icons.lock, 'Account Preference', () {}),
-              _buildRowWithIconAndText(Icons.star, 'Rate Us', () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const RateUs()));
-              }),
-              _buildRowWithIconAndText(
-                  Icons.privacy_tip, 'Privacy Policy', () {}),
-              _buildRowWithIconAndText(Icons.support, 'Student Support', () {}),
-              _buildRowWithIconAndText(
-                  Icons.description, 'Terms and Conditions', () {}),
-              _buildRowWithIconAndText(Icons.question_answer, 'FAQ', () {}),
-              _buildRowWithIconAndText(Icons.help, 'Help', () {}),
-              _buildRowWithIconAndText(
-                Icons.logout_outlined,
-                'Logout',
-                () async {
-                  final navigator = Navigator.of(context);
-                  await sl<FirebaseAuth>().signOut();
-                  navigator.pushNamedAndRemoveUntil(
-                    OnboardingScreen.routeName,
-                    (route) => false,
-                  );
-                },
-              ),
-            ],
-          ),
+        preferredSize: Size.fromHeight(
+          MediaQuery.of(context).size.height * 0.15,
         ),
+        child: const CustomAppBarWithPop(text: 'My Account'),
+      ),
+      body: BlocConsumer<SubscriptionCubit, SubscriptionState>(
+        listener: (_, state) {
+          if (state is SubscriptionError) {
+            CoreUtils.showSnackar(
+              context: context,
+              message: 'Error checking the subscription. Try later',
+            );
+          } else if (state is SubscriptionDataFetched &&
+              state.subscriptions.isNotEmpty) {
+            final data = state.subscriptions as List<SubscriptionModel>;
+
+            for (SubscriptionModel subscriptionModel in data) {
+              if (subscriptionModel.teacherId ==
+                  context.read<TeacherProvider>().teacherInfo![0].id) {
+                context.read<SubscriptionProvider>().isSubscribed = true;
+                if (subscriptionModel.type == "free") {
+                  context.read<SubscriptionProvider>().package = "Free";
+                  context.read<SubscriptionProvider>().price = 0;
+                  context.read<SubscriptionProvider>().validTill =
+                      subscriptionModel.paidAt.add(
+                    const Duration(days: 7),
+                  );
+                } else if (subscriptionModel.type == "monthly") {
+                  context.read<SubscriptionProvider>().package = "Monthly";
+                  context.read<SubscriptionProvider>().price = 50;
+                  context.read<SubscriptionProvider>().validTill =
+                      subscriptionModel.paidAt.add(
+                    const Duration(
+                      days: 31,
+                    ),
+                  );
+                } else if (subscriptionModel.type == "annual") {
+                  context.read<SubscriptionProvider>().package = "Annual";
+                  context.read<SubscriptionProvider>().price = 50;
+                  context.read<SubscriptionProvider>().validTill =
+                      subscriptionModel.paidAt.add(
+                    const Duration(
+                      days: 365,
+                    ),
+                  );
+                }
+              }
+            }
+          }
+        },
+        builder: (context, state) {
+          if (state is GettingSubscriptionData) {
+            return const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(CustomColor.redColor),
+              ),
+            );
+          }
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  ///set to true when user have active subscription plan
+                  widget.isStudent
+                      ? const SizedBox.shrink()
+                      : _buildSubscriptionPlan(
+                          isSubscribed:
+                              context.read<SubscriptionProvider>().isSubscribed,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const SubscriptionPlanPage(),
+                              ),
+                            );
+                          },
+                          package: context
+                              .read<SubscriptionProvider>()
+                              .package
+                              .toString(),
+                          validTill:
+                              context.read<SubscriptionProvider>().validTill,
+                          price: context.read<SubscriptionProvider>().price,
+                        ),
+                  _buildAccountSection(),
+                  _buildRowWithIconAndText(
+                    Icons.person,
+                    'Profile',
+                    () {},
+                  ),
+                  _buildRowWithIconAndText(
+                    Icons.lock,
+                    'Account Preference',
+                    () {},
+                  ),
+                  _buildRowWithIconAndText(Icons.star, 'Rate Us', () {
+                    Navigator.of(context).pushNamed(
+                      RateUs.routeName,
+                    );
+                  }),
+                  _buildRowWithIconAndText(
+                      Icons.privacy_tip, 'Privacy Policy', () {}),
+                  _buildRowWithIconAndText(
+                    Icons.support,
+                    'Student Support',
+                    () {},
+                  ),
+                  _buildRowWithIconAndText(
+                    Icons.description,
+                    'Terms and Conditions',
+                    () {},
+                  ),
+                  _buildRowWithIconAndText(
+                    Icons.question_answer,
+                    'FAQ',
+                    () {},
+                  ),
+                  _buildRowWithIconAndText(
+                    Icons.help,
+                    'Help',
+                    () {},
+                  ),
+                  _buildRowWithIconAndText(
+                    Icons.logout_outlined,
+                    'Logout',
+                    () async {
+                      if (context.mounted) {
+                        context.read<UserProvider>().userInfo = [];
+                      }
+                      final navigator = Navigator.of(context);
+                      await sl<FirebaseAuth>().signOut();
+                      navigator.pushNamedAndRemoveUntil(
+                        OnboardingScreen.routeName,
+                        (route) => false,
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildSubscriptionPlan(bool isSubscribed, VoidCallback onPressed) {
+  Widget _buildSubscriptionPlan({
+    required bool isSubscribed,
+    required VoidCallback onPressed,
+    required String package,
+    required DateTime validTill,
+    required double price,
+  }) {
     if (isSubscribed) {
       return GestureDetector(
         onTap: onPressed,
@@ -78,7 +211,7 @@ class MyAccountScreen extends StatelessWidget {
                   mainAxisAlignment: mainSpaceBet,
                   children: [
                     Text(
-                      'Year Package',
+                      '$package Package',
                       style: CustomStyle.whiteh3,
                     ),
                     Text(
@@ -88,19 +221,37 @@ class MyAccountScreen extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: Dimensions.heightSize),
-                Row(
-                  mainAxisAlignment: mainSpaceBet,
-                  children: [
-                    Text(
-                      'Monthly \$50',
-                      style: CustomStyle.whiteh2,
-                    ),
-                    Text(
-                      '31 December,2024',
-                      style: CustomStyle.whiteh2,
-                    ),
-                  ],
-                ),
+                price == 0
+                    ? Row(
+                        mainAxisAlignment: mainSpaceBet,
+                        children: [
+                          Text(
+                            'Weekly \$0',
+                            style: CustomStyle.whiteh2,
+                          ),
+                          Text(
+                            ChatUtils.toMyTime(
+                              validTill,
+                            ),
+                            style: CustomStyle.whiteh2,
+                          ),
+                        ],
+                      )
+                    : Row(
+                        mainAxisAlignment: mainSpaceBet,
+                        children: [
+                          Text(
+                            'Monthly \$50',
+                            style: CustomStyle.whiteh2,
+                          ),
+                          Text(
+                            ChatUtils.toMyTime(
+                              validTill,
+                            ),
+                            style: CustomStyle.whiteh2,
+                          ),
+                        ],
+                      ),
               ],
             ),
           ),
@@ -176,7 +327,9 @@ class MyAccountScreen extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.arrow_forward_ios),
+            icon: const Icon(
+              Icons.arrow_forward_ios,
+            ),
             onPressed: onPressed,
           ),
         ],

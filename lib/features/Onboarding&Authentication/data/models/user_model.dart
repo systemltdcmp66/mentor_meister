@@ -12,9 +12,13 @@ class LocalUserModel extends LocaleUser {
     super.profilePic,
     super.groupIds,
     super.enrolledCourseIds,
+    super.hiredTeacherIds,
     super.followers,
     super.following,
     super.teacherId,
+    super.isFirstTime,
+    super.alreadyVisitTutorSignUpPage,
+    super.alreadyVisitTutorAskPage,
   });
 
   const LocalUserModel.empty()
@@ -28,19 +32,24 @@ class LocalUserModel extends LocaleUser {
 
   LocalUserModel.fromMap(DataMap map)
       : this(
-            uid: map['uid'] as String,
-            name: map['name'] as String,
-            email: map['email'] as String,
-            phoneNumber: map['phoneNumber'] as String,
-            points: (map['points'] as num).toInt(),
-            bio: map['bio'] as String?,
-            profilePic: map['profilePic'] as String?,
-            groupIds: List<String>.from(map['groupIds'] as List<dynamic>),
-            enrolledCourseIds:
-                (map['enrolledCourseIds'] as List).cast<String>(),
-            followers: List<String>.from(map['followers'] as List),
-            following: List<String>.from(map['following'] as List<dynamic>),
-            teacherId: map['teacherId'] as String?);
+          uid: map['uid'] as String,
+          name: map['name'] as String,
+          email: map['email'] as String,
+          phoneNumber: map['phoneNumber'] as String,
+          points: (map['points'] as num).toInt(),
+          bio: map['bio'] as String?,
+          profilePic: map['profilePic'] as String?,
+          groupIds: List<String>.from(map['groupIds'] as List<dynamic>),
+          enrolledCourseIds: (map['enrolledCourseIds'] as List).cast<String>(),
+          hiredTeacherIds: (map['hiredTeacherIds'] as List).cast<String>(),
+          followers: List<String>.from(map['followers'] as List),
+          following: List<String>.from(map['following'] as List<dynamic>),
+          teacherId: map['teacherId'] as String?,
+          isFirstTime: map['isFirstTime'] as bool?,
+          alreadyVisitTutorSignUpPage:
+              map['alreadyVisitTutorSignUpPage'] as bool?,
+          alreadyVisitTutorAskPage: map['alreadyVisitTutorAskPage'] as bool?,
+        );
 
   DataMap toMap() => {
         'uid': uid,
@@ -52,9 +61,13 @@ class LocalUserModel extends LocaleUser {
         'profilePic': profilePic,
         'groupIds': groupIds,
         'enrolledCourseIds': enrolledCourseIds,
+        'hiredTeacherIds': hiredTeacherIds,
         'followers': followers,
         'following': following,
         'teacherId': teacherId,
+        'isFirstTime': isFirstTime,
+        'alreadyVisitTutorSignUpPage': alreadyVisitTutorSignUpPage,
+        'alreadyVisitTutorAskPage': alreadyVisitTutorAskPage,
       };
 
   LocalUserModel copyWith({
@@ -66,10 +79,14 @@ class LocalUserModel extends LocaleUser {
     String? profilePic,
     int? points,
     List<String>? enrolledCourseIds,
+    List<String>? hiredTeacherIds,
     List<String>? groupIds,
     List<String>? followers,
     List<String>? following,
     String? teacherId,
+    bool? isFirstTime,
+    bool? alreadyVisitTutorSignUpPage,
+    bool? alreadyVisitTutorAskPage,
   }) =>
       LocalUserModel(
         uid: uid ?? this.uid,
@@ -80,8 +97,14 @@ class LocalUserModel extends LocaleUser {
         bio: bio ?? this.bio,
         profilePic: profilePic ?? this.profilePic,
         enrolledCourseIds: enrolledCourseIds ?? this.enrolledCourseIds,
+        hiredTeacherIds: hiredTeacherIds ?? this.hiredTeacherIds,
         followers: followers ?? this.followers,
         following: following ?? this.following,
         teacherId: teacherId ?? this.teacherId,
+        isFirstTime: isFirstTime ?? this.isFirstTime,
+        alreadyVisitTutorSignUpPage:
+            alreadyVisitTutorSignUpPage ?? this.alreadyVisitTutorSignUpPage,
+        alreadyVisitTutorAskPage:
+            alreadyVisitTutorAskPage ?? this.alreadyVisitTutorAskPage,
       );
 }
